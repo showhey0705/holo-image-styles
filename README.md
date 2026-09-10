@@ -8,7 +8,7 @@ One repository builds two plugins:
 | Edition | Slug | Effects | Distribution |
 |---|---|---|---|
 | Free | `holo-image-styles` | 7 (the default of each family) | WordPress.org |
-| All Effects | `holo-image-styles-all` | 23 | JADE Pro account page (`Update URI` → `update.json`) |
+| All Effects | `holo-image-styles-all` | 23 | JADE Pro account page (Supabase `member-downloads`; `Update URI` → Edge Function `holo-update`) |
 
 Full specification: `SPEC.md` (Japanese).
 

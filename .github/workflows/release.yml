@@ -1,25 +1,113 @@
 name: Release
 
+# BCP Builder と同じ運用: タグを押すとリリースが出来上がる。
+#   1. タグの版数と package.json / readme.txt の版数が一致しているか検証
+#   2. 両エディションをビルド（bin/build.mjs が中身を検証する）
+#   3. All Effects: Supabase Storage の非公開バケット member-downloads へ upsert
+#        holo-image-styles-all/holo-image-styles-all.zip        … 最新（アカウントページ・自動更新が使う）
+#        holo-image-styles-all/holo-image-styles-all-<v>.zip    … 版付き（ロールバック用）
+#        holo-image-styles-all/plugin.json                      … 更新メタ（Edge Function holo-update が配信）
+#      配布は Edge Function download-url（アカウントページ）/ holo-download（自動更新）が署名 URL を出す。
+#      Secrets（SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY）が無ければスキップ。
+#   4. 無料版: WordPress.org へ SVN デプロイ（SVN_USERNAME / SVN_PASSWORD があるときだけ。審査前はスキップ）
+#   5. GitHub Release を作成し、無料版の zip だけ添付（All Effects は添付しない）
+
 on:
   push:
-    tags: ['v*']
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ github.ref_name }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
+      - name: Derive version from tag
+        id: ver
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$TAG' must be of form v<x.y.z>"; exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package.json / readme.txt match the tag
+        run: |
+          EXPECTED="${{ steps.ver.outputs.version }}"
+          PKG=$(node -p "require('./package.json').version")
+          STABLE=$(grep -E '^Stable tag:' readme.txt | sed -E 's/^Stable tag:[[:space:]]*//' | tr -d ' \t\r')
+          echo "expected=$EXPECTED package.json=$PKG readme.txt=$STABLE"
+          if [[ "$PKG" != "$EXPECTED" || "$STABLE" != "$EXPECTED" ]]; then
+            echo "::error::Version mismatch. Run: npm version $EXPECTED --no-git-tag-version && update 'Stable tag' in readme.txt, then tag."
+            exit 1
+          fi
+
       - run: npm ci
-      - name: Sync package.json version with the tag
-        run: npm version --no-git-tag-version "${VERSION#v}"
-      - run: npm run build:dist
+      - name: Build both editions (verified by bin/build.mjs)
+        run: npm run build:dist
+      - name: Write plugin.json (All Effects update metadata)
+        run: node bin/write-plugin-json.mjs "${{ steps.ver.outputs.version }}"
+
+      # ---------- All Effects → Supabase Storage (member-downloads, private) ----------
+      - name: Check Supabase secrets
+        id: supa
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [[ -n "$SUPABASE_URL" && -n "$SERVICE_KEY" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Supabase Secrets 未設定のため All Effects のクラウド配信はスキップします。"
+          fi
+
+      - name: Upload All Effects to Supabase Storage (latest, versioned, plugin.json)
+        if: steps.supa.outputs.enabled == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -e
+          BASE="${SUPABASE_URL%/}/storage/v1/object/member-downloads/holo-image-styles-all"
+          up() { # up <local file> <remote name> <content-type>
+            HTTP=$(curl -sS -o /tmp/up.out -w "%{http_code}" -X POST "$BASE/$2" \
+              -H "Authorization: Bearer $SERVICE_KEY" -H "apikey: $SERVICE_KEY" \
+              -H "Content-Type: $3" -H "x-upsert: true" --data-binary @"$1")
+            echo "$2 → HTTP $HTTP"; cat /tmp/up.out; echo
+            [[ "$HTTP" == "200" ]] || { echo "::error::upload failed: $2"; exit 1; }
+          }
+          up dist/holo-image-styles-all.zip "holo-image-styles-all.zip"            application/zip
+          up dist/holo-image-styles-all.zip "holo-image-styles-all-${VERSION}.zip" application/zip
+          up dist/plugin.json               "plugin.json"                           application/json
+
+      # ---------- Free edition → WordPress.org ----------
+      - name: Check WordPress.org secrets
+        id: svn
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        run: |
+          if [[ -n "$SVN_USERNAME" && -n "$SVN_PASSWORD" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::SVN Secrets 未設定のため WordPress.org デプロイはスキップします（審査通過後に登録）。"
+          fi
+
       - name: Deploy the free edition to WordPress.org
+        if: steps.svn.outputs.enabled == 'true'
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
@@ -27,30 +115,19 @@ jobs:
           BUILD_DIR: dist/holo-image-styles
           ASSETS_DIR: .wordpress-org
           SLUG: holo-image-styles
-      # --- All Effects: same pipeline as BCP Builder (SPEC §14.6). GitHub Release gets no zip on purpose.
-      - name: Upload All Effects to Supabase Storage
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          V="${VERSION#v}"
-          curl --fail -X POST "$SUPABASE_URL/storage/v1/object/member-downloads/holo-image-styles-all/v${V}/holo-image-styles-all.zip" \
-            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/zip" \
-            --data-binary @dist/holo-image-styles-all.zip
-      - name: Register release row
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          V="${VERSION#v}"
-          curl --fail -X POST "$SUPABASE_URL/rest/v1/releases" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-            -H "Content-Type: application/json" -H "Prefer: resolution=merge-duplicates" \
-            -d "{\"product\":\"holo-image-styles-all\",\"version\":\"${V}\",\"path\":\"holo-image-styles-all/v${V}/holo-image-styles-all.zip\",\"size\":$(stat -c%s dist/holo-image-styles-all.zip)}"
-      - name: Write update.json
-        run: node bin/write-update-json.mjs "${VERSION#v}"
+
+      # ---------- GitHub Release (free zip only) ----------
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          generate_release_notes: true
+          files: dist/holo-image-styles.zip
+
       - uses: actions/upload-artifact@v4
         with:
-          name: update-json
-          path: dist/update.json
-      # Publishing dist/update.json to https://pro.jadeclinic.jp/holo-image-styles/update.json follows the
-      # JADE Pro deploy procedure (static path). Add that step here once the path is decided.
+          name: release-${{ steps.ver.outputs.version }}
+          path: |
+            dist/*.zip
+            dist/plugin.json

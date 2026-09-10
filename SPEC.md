@@ -713,3 +713,21 @@ JADE Pro 購読者は購入ボタンが出ず、最初からダウンロード�
 | 透明画像 | `<img src>` が png/webp/gif/avif/svg のとき `--holo-mask:url(src)` を出し、shine/glare を画像自身でマスク。角丸のスキャン画像や切り抜きでも透明部分に光が乗らない（黒い角の根本対策） |
 | クリック | 属性 `holo.click`: `none`（既定）/ `lift`。lift はクリックで `--card-scale:1.12` に浮き上がり光沢を点灯、再クリック・外側クリック・Esc で戻る。タッチ端末では「タップで点灯」の代わりになる。reduced-motion では拡大しない |
 | UI | ツールバーはアイコンのみ。サムネは見出しなしで台帳順の 1 グリッド。「カードの窓」はパネルから非表示（属性は維持） |
+
+## 付録 E. §14 の実装差分 — 実物の BCP Builder 配布に合わせた点（2026-09-10）
+
+BCP Builder の実装（`bcp-builder/.github/workflows/release.yml`、`beauty-clinic-patterns/supabase/functions/download-url`、`jadepro-account.php` の `downloads` 配列）を確認した結果、§14.1〜14.6 の想定と異なる箇所を次のように実装した。**§14 の本文より本付録が優先**。
+
+| §14 の想定 | 実装 |
+|---|---|
+| `subscriptions` / `entitlements` ビュー / `releases` テーブル | 存在しない。権利は既存の **`licenses`**（email, tier, is_active, expires_at）で判定。`releases` テーブルは作らない |
+| `member-downloads/holo-image-styles-all/v{version}/…` | BCP Builder と同じ **`holo-image-styles-all/holo-image-styles-all.zip`（最新・upsert）＋ `holo-image-styles-all-{v}.zip`（版付き）＋ `plugin.json`** |
+| Edge Function `get-download` | 既存の **`download-url`** の `FILES` に `holo-image-styles-all`（bucket `member-downloads`, `minTier: starter`）を 1 行追加 |
+| `update.json` を pro.jadeclinic.jp の静的パスへ配置、`package` = WP REST `jadepro/v1/download` | **Edge Function `holo-update`**（GET・無認証）が Storage の `plugin.json` を返し、`package` = **Edge Function `holo-download`**（GET・無認証 → 署名付き URL 60 秒へ 302）。`Update URI` は `https://<project>.supabase.co/functions/v1/holo-update`。pro.jadeclinic.jp 側にファイルもコードも置かない |
+| $5 単体購入（`purchases`、Checkout、Webhook 分岐） | **フェーズ 2 として保留**。フェーズ 1 は JADE Pro 購読者（Clinic 以上）に含める形。無料アカウントには「Clinic 以上」と表示される（既存 UI の挙動） |
+| アカウントページのカードを新規ブロックで組む | `jadepro-account.php` の `downloads` 配列に 1 項目追加するだけ（既存カード UI がそのまま並ぶ） |
+
+自動更新は §14.5 のとおり honor system（無認証）。「更新は購読者のみ」に絞る場合は `holo-update` にライセンスキー判定（`builder-update` と同じ）を足せばよく、プラグイン側の変更は不要。
+
+Edge Function は `verify_jwt=false` でデプロイする: `supabase functions deploy holo-update holo-download --no-verify-jwt`（`download-url` は従来どおり verify_jwt=true）。
+

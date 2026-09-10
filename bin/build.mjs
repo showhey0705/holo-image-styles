@@ -19,7 +19,7 @@ import {
 	ROOT,
 	SRC,
 	EDITIONS,
-	UPDATE_HOST,
+	UPDATE_URI,
 	loadLedger,
 	filterLedger,
 	readPackageVersion,
@@ -144,7 +144,7 @@ const main = tpl
 	.replace( /\{\{PRIORITY\}\}/g, String( cfg.priority ) )
 	.replace(
 		/\{\{UPDATE_URI\}\}\n/g,
-		edition === 'all' ? ` * Update URI:        https://${ UPDATE_HOST }/holo-image-styles/update.json\n` : ''
+		edition === 'all' ? ` * Update URI:        ${ UPDATE_URI }\n` : ''
 	)
 	.replace( /\{\{ACTIVATION\}\}\n?/g, activation );
 fs.writeFileSync( path.join( OUT, `${ cfg.slug }.php` ), main );

@@ -23,8 +23,16 @@ export const EDITIONS = {
 	},
 };
 
-/** Host that serves update.json for the All Effects edition (§8). */
-export const UPDATE_HOST = process.env.HOLO_UPDATE_HOST || 'pro.jadeclinic.jp';
+/**
+ * Supabase project host of JADE Pro (§8 / §14). The All Effects edition's `Update URI` points at the
+ * Edge Function `holo-update` there; `holo-download` hands out the signed zip URL (same project as
+ * BCP Builder's `builder-update` / `download-url`).
+ */
+export const UPDATE_HOST = process.env.HOLO_UPDATE_HOST || 'jhbzbqsondftxlcsevpn.supabase.co';
+export const UPDATE_URI = `https://${ UPDATE_HOST }/functions/v1/holo-update`;
+export const DOWNLOAD_URI = `https://${ UPDATE_HOST }/functions/v1/holo-download`;
+/** Public product page (changelog, "View details" link). */
+export const PRODUCT_URL = 'https://pro.jadeclinic.jp/holo-image-styles/';
 
 export function loadLedger() {
 	const raw = fs.readFileSync( path.join( SRC, 'variants.json' ), 'utf8' );
