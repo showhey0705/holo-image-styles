@@ -59,17 +59,16 @@ jobs:
         run: npx wp-env start
       - name: Fixtures
         run: |
-          npx wp-env run cli bash -c 'curl -sSL -o /tmp/card.jpg https://picsum.photos/480/672 || true'
           npx wp-env run cli wp plugin activate holo-image-styles
-          npx wp-env run cli bash /var/www/html/wp-content/plugins/holo-image-styles-src/tests/e2e/setup.sh /tmp/card.jpg
+          npx wp-env run cli bash /var/www/html/wp-content/plugins/holo-image-styles-src/tests/e2e/setup.sh
       - run: npx playwright install --with-deps chromium
       - name: Smoke (free edition)
         run: WP_BASE=http://localhost:8888 WP_USER=admin WP_PASS=password node tests/e2e/smoke.mjs
-      - name: Gallery + edition switch (All Effects)
+      - name: Gallery (All Effects edition)
         run: |
+          npx wp-env run cli wp plugin deactivate holo-image-styles
           npx wp-env run cli wp plugin activate holo-image-styles-all
           WP_BASE=http://localhost:8888 node tests/e2e/gallery.mjs
-          WP_BASE=http://localhost:8888 WP_USER=admin WP_PASS=password WP_PLUGINS_DIR=$PWD/dist node tests/e2e/edition.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

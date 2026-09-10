@@ -15,7 +15,7 @@ async function frontTest( reduced ) {
 	const errors = [];
 	page.on( 'console', ( m ) => { if ( m.type() === 'error' ) errors.push( m.text() ); } );
 	page.on( 'pageerror', ( e ) => errors.push( 'pageerror: ' + e.message ) );
-	await page.goto( BASE + '/?p=5', { waitUntil: 'networkidle' } );
+	await page.goto( BASE + '/?name=holo-test', { waitUntil: 'networkidle' } );
 	const label = reduced ? '[reduced-motion] ' : '[front] ';
 
 	const cards = await page.locator( '.holo__card' ).count();

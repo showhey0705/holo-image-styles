@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # Creates the fixture posts used by smoke.mjs (post "holo-test") and gallery.mjs (post "all-variants").
-# Run inside the WordPress install with WP-CLI available:  bash tests/e2e/setup.sh /path/to/card.jpg
+# Run inside the WordPress install with WP-CLI available:  bash tests/e2e/setup.sh [/path/to/card.jpg]
+# Without an argument the committed tests/e2e/card.jpg is used, so no network access is needed.
 set -euo pipefail
-IMG="${1:-}"
-[ -f "$IMG" ] || { echo "usage: $0 /path/to/image.jpg"; exit 1; }
+DIR="$(cd "$(dirname "$0")" && pwd)"
+IMG="${1:-$DIR/card.jpg}"
+[ -s "$IMG" ] || IMG="$DIR/card.jpg"
+[ -s "$IMG" ] || { echo "no fixture image found (looked at $IMG)"; exit 1; }
 ID=$(wp media import "$IMG" --porcelain)
 URL=$(wp post get "$ID" --field=guid)
 cat > /tmp/holo-test.html <<HTML
@@ -28,8 +31,18 @@ cat > /tmp/holo-test.html <<HTML
 <!-- /wp:image -->
 HTML
 wp post create /tmp/holo-test.html --post_title="Holo test" --post_name=holo-test --post_status=publish
-node -e '
-const j=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));let out="";
-for (const [k,v] of Object.entries(j.variants)) out+=`<!-- wp:image {"id":${process.argv[2]},"sizeSlug":"full","className":"is-style-holo-${v.family}","holo":{"variant":"${k}","intensity":1,"tilt":1,"touch":"tap","showcase":false,"window":false}} -->\n<figure class="wp-block-image size-full is-style-holo-${v.family}"><img src="${process.argv[3]}" alt="" class="wp-image-${process.argv[2]}"/><figcaption class="wp-element-caption">${k}</figcaption></figure>\n<!-- /wp:image -->\n\n`;
-require("fs").writeFileSync("/tmp/all-variants.html",out);' "$(dirname "$0")/../../src/variants.json" "$ID" "$URL"
+# Note: the wp-env CLI container has PHP/WP-CLI but no Node, so this is PHP, not `node -e`.
+php -r '
+$j   = json_decode( file_get_contents( $argv[1] ), true );
+$id  = (int) $argv[2];
+$url = $argv[3];
+$out = "";
+foreach ( $j["variants"] as $k => $v ) {
+	$f    = $v["family"];
+	$out .= "<!-- wp:image {\"id\":" . $id . ",\"sizeSlug\":\"full\",\"className\":\"is-style-holo-" . $f . "\",\"holo\":{\"variant\":\"" . $k . "\",\"intensity\":1,\"tilt\":1,\"touch\":\"tap\",\"showcase\":false,\"window\":false}} -->\n";
+	$out .= "<figure class=\"wp-block-image size-full is-style-holo-" . $f . "\"><img src=\"" . $url . "\" alt=\"\" class=\"wp-image-" . $id . "\"/><figcaption class=\"wp-element-caption\">" . $k . "</figcaption></figure>\n";
+	$out .= "<!-- /wp:image -->\n\n";
+}
+file_put_contents( "/tmp/all-variants.html", $out );
+' "$DIR/../../src/variants.json" "$ID" "$URL"
 wp post create /tmp/all-variants.html --post_title="All variants" --post_name=all-variants --post_status=publish
