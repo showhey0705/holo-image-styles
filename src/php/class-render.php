@@ -20,7 +20,7 @@ final class Render {
 	/**
 	 * Attribute defaults. Must be identical to the JS defaults (SPEC §6.1).
 	 *
-	 * @var array{variant:string,intensity:float|int,tilt:float|int,touch:string,glow:string,showcase:bool,window:bool}
+	 * @var array{variant:string,intensity:float|int,tilt:float|int,touch:string,glow:string,click:string,showcase:bool,window:bool}
 	 */
 	public const DEFAULTS = [
 		'variant'   => '',
@@ -28,6 +28,7 @@ final class Render {
 		'tilt'      => 1,
 		'touch'     => 'tap',
 		'glow'      => 'soft',
+		'click'     => 'none',
 		'showcase'  => false,
 		'window'    => false,
 	];
@@ -59,7 +60,7 @@ final class Render {
 	 *
 	 * @param mixed  $raw    Attribute value.
 	 * @param string $family Family slug.
-	 * @return array{variant:string,intensity:float,tilt:float,touch:string,glow:string,showcase:bool,window:bool}
+	 * @return array{variant:string,intensity:float,tilt:float,touch:string,glow:string,click:string,showcase:bool,window:bool}
 	 */
 	public static function sanitize_holo( $raw, string $family ): array {
 		$raw   = is_array( $raw ) ? $raw : [];
@@ -77,6 +78,10 @@ final class Render {
 		if ( ! in_array( $glow, [ 'soft', 'none', 'color' ], true ) ) {
 			$glow = self::DEFAULTS['glow'];
 		}
+		$click = isset( $raw['click'] ) && is_string( $raw['click'] ) ? $raw['click'] : self::DEFAULTS['click'];
+		if ( ! in_array( $click, [ 'none', 'lift' ], true ) ) {
+			$click = self::DEFAULTS['click'];
+		}
 		$variant = isset( $raw['variant'] ) && is_string( $raw['variant'] ) ? sanitize_key( $raw['variant'] ) : '';
 		return [
 			'variant'   => Variants::resolve( $family, $variant ),
@@ -84,6 +89,7 @@ final class Render {
 			'tilt'      => $num( $raw['tilt'] ?? null, (float) self::DEFAULTS['tilt'] ),
 			'touch'     => $touch,
 			'glow'      => $glow,
+			'click'     => $click,
 			'showcase'  => ! empty( $raw['showcase'] ),
 			'window'    => ! empty( $raw['window'] ),
 		];
@@ -93,10 +99,11 @@ final class Render {
 	 * Build the inline style for `.holo__card` (custom properties only).
 	 *
 	 * @param string                                                                              $family Family slug.
-	 * @param array{variant:string,intensity:float,tilt:float,touch:string,glow:string,showcase:bool,window:bool} $holo   Sanitized attribute.
+	 * @param array{variant:string,intensity:float,tilt:float,touch:string,glow:string,click:string,showcase:bool,window:bool} $holo   Sanitized attribute.
 	 * @param array<string,mixed>                                                                 $attrs  Block attributes (for border radius).
+	 * @param string                                                                              $img_src Rendered <img src> (for the alpha mask).
 	 */
-	public static function card_style( string $family, array $holo, array $attrs = [] ): string {
+	public static function card_style( string $family, array $holo, array $attrs = [], string $img_src = '' ): string {
 		$fam  = Variants::get_family( $family );
 		$var  = Variants::variant( $holo['variant'] );
 		$vars = [
@@ -114,6 +121,11 @@ final class Render {
 		if ( 'cosmos' === $family ) {
 			// Random star-field offset (the original does this in JS).
 			$vars['--cosmosbg'] = wp_rand( 0, 734 ) . 'px ' . wp_rand( 0, 1280 ) . 'px';
+		}
+		// Images that can carry transparency (PNG/WebP/GIF/AVIF/SVG): mask the light layers with the image
+		// itself so nothing is painted over transparent pixels (rounded corners, cut-outs).
+		if ( '' !== $img_src && self::may_have_alpha( $img_src ) ) {
+			$vars['--holo-mask'] = 'url(' . esc_url_raw( $img_src ) . ')';
 		}
 		$radius = $attrs['style']['border']['radius'] ?? null;
 		if ( is_string( $radius ) && preg_match( '/^[0-9.]+(px|em|rem|%|vw|vh)$/', $radius ) ) {
@@ -182,11 +194,14 @@ final class Render {
 			return $content;
 		}
 
+		$img     = new \WP_HTML_Tag_Processor( $inner );
+		$img_src = $img->next_tag( [ 'tag_name' => 'IMG' ] ) ? (string) $img->get_attribute( 'src' ) : '';
+
 		$holo  = self::sanitize_holo( $attrs['holo'] ?? null, $family );
-		$style = self::card_style( $family, $holo, $attrs );
+		$style = self::card_style( $family, $holo, $attrs, $img_src );
 
 		$wrapper_open = sprintf(
-			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s" data-holo-glow="%8$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="%7$s::callbacks.init" data-wp-on-async--pointermove="%7$s::actions.move" data-wp-on-async--pointerleave="%7$s::actions.leave" data-wp-on-async--pointerdown="%7$s::actions.down">',
+			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s" data-holo-glow="%8$s" data-holo-click="%9$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="%7$s::callbacks.init" data-wp-on-async--pointermove="%7$s::actions.move" data-wp-on-async--pointerleave="%7$s::actions.leave" data-wp-on-async--pointerdown="%7$s::actions.down" data-wp-on-async--click="%7$s::actions.click">',
 			esc_attr( $holo['variant'] ),
 			esc_attr( $holo['touch'] ),
 			$holo['showcase'] ? ' data-holo-showcase="1"' : '',
@@ -194,7 +209,8 @@ final class Render {
 			esc_attr( $style ),
 			esc_attr( $region_ns ),
 			esc_attr( self::INTERACTIVITY_NS ),
-			esc_attr( $holo['glow'] )
+			esc_attr( $holo['glow'] ),
+			esc_attr( $holo['click'] )
 		);
 		$layers       = '<span class="holo__shine" aria-hidden="true"></span><span class="holo__glare" aria-hidden="true"></span>';
 
@@ -204,6 +220,17 @@ final class Render {
 		Plugin::instance()->enqueue_front_assets( $family );
 
 		return $html;
+	}
+
+	/**
+	 * Whether an image URL points to a format that can have an alpha channel.
+	 *
+	 * @param string $url Image URL.
+	 */
+	public static function may_have_alpha( string $url ): bool {
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$ext  = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
+		return in_array( $ext, [ 'png', 'webp', 'gif', 'avif', 'svg' ], true );
 	}
 
 	/**

@@ -1,10 +1,10 @@
 /*
- * Holo Image Styles — editor-ui.css (admin page: inspector panel + toolbar popover; not the canvas iframe)
+ * Holo Image Styles — editor-ui.css (admin page: the inspector panel; not the canvas iframe)
  */
 
 .holo-picker {
 	display: grid;
-	grid-template-columns: repeat(var(--holo-picker-columns, 3), minmax(0, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 8px;
 	margin: 0 0 16px;
 }

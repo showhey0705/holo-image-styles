@@ -77,12 +77,28 @@ const flush = ( el ) => {
 	} );
 };
 
+/* Fixed sheen used while a card is "lifted" (click) or in touch=glare mode. */
+const LIFT_VARS = {
+	...varsFromPointer( 35, 25 ),
+	'rotate-x': '0deg',
+	'rotate-y': '0deg',
+};
+
 const rest = ( el ) => {
 	el._holoPending = null;
 	stopShowcase( el );
 	el.classList.remove( 'is-interacting' );
-	setVars( el, REST );
+	setVars( el, el.classList.contains( 'is-lifted' ) ? LIFT_VARS : REST );
 };
+
+const unlift = ( el ) => {
+	if ( el.classList.contains( 'is-lifted' ) ) {
+		el.classList.remove( 'is-lifted' );
+		rest( el );
+	}
+};
+const unliftAll = () =>
+	document.querySelectorAll( '.holo__card.is-lifted' ).forEach( unlift );
 
 /* ---- showcase (optional, once, 4 s) ---- */
 const stopShowcase = ( el ) => {
@@ -166,6 +182,17 @@ const bindVisibility = () => {
 				.forEach( rest );
 		}
 	} );
+	// Click outside / Escape puts lifted cards back.
+	document.addEventListener( 'pointerdown', ( e ) => {
+		if ( ! e.target.closest?.( '.holo__card.is-lifted' ) ) {
+			unliftAll();
+		}
+	} );
+	document.addEventListener( 'keydown', ( e ) => {
+		if ( e.key === 'Escape' ) {
+			unliftAll();
+		}
+	} );
 };
 
 /**
@@ -225,13 +252,34 @@ store( NS, {
 			const { ref } = getElement();
 			rest( ref );
 		},
+		click( event ) {
+			// click=lift: the card floats up (scale) with the sheen on; click again / outside / Esc to put it back.
+			const { ref } = getElement();
+			if (
+				ref.dataset.holoClick !== 'lift' ||
+				event.target.closest( 'a, button' )
+			) {
+				return;
+			}
+			if ( ref.classList.contains( 'is-lifted' ) ) {
+				unlift( ref );
+				return;
+			}
+			unliftAll();
+			ref.classList.add( 'is-lifted' );
+			if ( reducedMotion() || ! hoverable() ) {
+				setVars( ref, LIFT_VARS );
+			}
+		},
 		down( event ) {
 			const { ref } = getElement();
 			// Touch devices without hover: light up for 1.5 s and spring back (touch=tap).
+			// With click=lift the tap toggles the lift instead (see `click`).
 			if (
 				event.pointerType !== 'touch' ||
 				hoverable() ||
-				ref.dataset.holoTouch !== 'tap'
+				ref.dataset.holoTouch !== 'tap' ||
+				ref.dataset.holoClick === 'lift'
 			) {
 				return;
 			}
@@ -264,12 +312,7 @@ store( NS, {
 				! hoverable() &&
 				! reducedMotion()
 			) {
-				setVars( ref, {
-					...varsFromPointer( 28, 18 ),
-					'rotate-x': '0deg',
-					'rotate-y': '0deg',
-					'card-opacity': 0.6,
-				} );
+				setVars( ref, { ...LIFT_VARS, 'card-opacity': 0.6 } );
 			}
 		},
 	},

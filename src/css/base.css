@@ -77,6 +77,7 @@
 	--pointer-from-left: 0.5;
 
 	/* Texture slots, filled per variant by the server via the style attribute (SPEC §3.2/§4.4). */
+	--holo-mask: none; /* url(image) for formats with alpha: layers never paint over transparent pixels */
 	--tex-1: none;
 	--tex-2: none;
 	--tex-3: none;
@@ -97,7 +98,7 @@
 	border-radius: var(--holo-radius);
 	transform-style: preserve-3d;
 	isolation: isolate;
-	transform: perspective(600px) translate3d(0, 0, 0.01px) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
+	transform: perspective(600px) translate3d(0, 0, 0.01px) scale(var(--card-scale)) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
 	transform-origin: center;
 	outline: 1px solid transparent; /* anti-alias trick from the original */
 
@@ -110,6 +111,7 @@
 		--rotate-x 1.2s var(--spring),
 		--rotate-y 1.2s var(--spring),
 		--card-opacity 1.2s var(--spring),
+		--card-scale 0.6s var(--spring),
 		--pointer-from-center 1.2s var(--spring),
 		--pointer-from-top 1.2s var(--spring),
 		--pointer-from-left 1.2s var(--spring);
@@ -127,9 +129,27 @@
 		--rotate-x 0.12s ease-out,
 		--rotate-y 0.12s ease-out,
 		--card-opacity 0.12s ease-out,
+		--card-scale 0.6s var(--spring),
 		--pointer-from-center 0.08s linear,
 		--pointer-from-top 0.08s linear,
 		--pointer-from-left 0.08s linear;
+}
+
+/* click=lift: the card floats up until clicked again (view/index.js toggles .is-lifted). */
+.holo__card[data-holo-click="lift"] {
+	cursor: zoom-in;
+}
+
+.holo__card.is-lifted {
+	--card-scale: 1.12;
+	cursor: zoom-out;
+	z-index: 3;
+	box-shadow: 0 28px 44px -20px rgba(0, 0, 0, 0.5);
+}
+
+.holo__card.is-lifted .holo__shine,
+.holo__card.is-lifted .holo__glare {
+	opacity: calc(var(--card-opacity) * var(--holo-intensity));
 }
 
 /* Shadow modes (data-holo-glow): soft (default) / none / color (the original coloured glow). */
@@ -175,6 +195,12 @@
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
+	-webkit-mask-image: var(--holo-mask);
+	mask-image: var(--holo-mask);
+	-webkit-mask-size: 100% 100%;
+	mask-size: 100% 100%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
 }
 
 /* Core lightbox button lives inside the card and must stay clickable (SPEC §3.1). */
@@ -296,6 +322,10 @@
 
 	.holo__card.is-interacting {
 		box-shadow: none;
+	}
+
+	.holo__card.is-lifted {
+		--card-scale: 1;
 	}
 }
 

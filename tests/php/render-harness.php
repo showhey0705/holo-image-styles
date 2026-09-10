@@ -22,6 +22,8 @@ if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
 // Minimal WP function stubs.
 function wp_kses_uri_attributes() { return [ 'href', 'src' ]; }
 function esc_url( $u ) { return $u; }
+function esc_url_raw( $u ) { return $u; }
+function wp_parse_url( $u, $c = -1 ) { return parse_url( $u, $c ); }
 function esc_attr( $s ) { return htmlspecialchars( (string) $s, ENT_QUOTES, 'UTF-8' ); }
 function sanitize_key( $k ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $k ) ); }
 function plugins_url( $path, $file ) { return 'https://example.test/wp-content/plugins/' . basename( dirname( $file ) ) . '/' . $path; }
@@ -99,6 +101,12 @@ $check( 'className mismatch with markup → untouched', $render->inject( $in, [ 
 $in  = '<figure class="wp-block-image is-style-holo-glare"><img src="a.jpg" alt="a &gt; b"></figure>';
 $out = $render->inject( $in, [ 'attrs' => [ 'className' => 'is-style-holo-glare' ] ] );
 $check( 'escaped > in alt survives', str_contains( $out, 'alt="a &gt; b"' ) && str_contains( $out, '</div></figure>' ) );
+
+// 5b. Alpha-capable formats get a mask, JPEGs do not.
+$out = $render->inject( '<figure class="wp-block-image is-style-holo-glare"><img src="https://x.test/a.png?x=1" alt=""></figure>', [ 'attrs' => [ 'className' => 'is-style-holo-glare' ] ] );
+$check( 'png gets --holo-mask', str_contains( $out, '--holo-mask:url(https://x.test/a.png?x=1)' ) );
+$out = $render->inject( '<figure class="wp-block-image is-style-holo-glare"><img src="https://x.test/a.jpg" alt=""></figure>', [ 'attrs' => [ 'className' => 'is-style-holo-glare' ] ] );
+$check( 'jpg gets no mask', ! str_contains( $out, '--holo-mask' ) );
 
 // 6. Border radius passthrough + bad values rejected.
 $out = $render->inject( '<figure class="wp-block-image is-style-holo-glare"><img src="a.jpg" alt=""></figure>', [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'style' => [ 'border' => [ 'radius' => '12px' ] ] ] ] );

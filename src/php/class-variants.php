@@ -142,7 +142,7 @@ final class Variants {
 	}
 
 	/**
-	 * Variants belonging to one family, in ledger order.
+	 * Variants belonging to one family, in ledger order (kept for the Abilities API, SPEC §10).
 	 *
 	 * @param string $family Family slug.
 	 * @return array<string,Variant>

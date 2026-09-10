@@ -139,14 +139,6 @@ msgid "Plays a short 4-second sweep once when the image scrolls into view."
 msgstr "画像が表示されたときに 4 秒間のスイープを 1 回だけ再生します。"
 
 #: build/editor.js:1
-msgid "Card window"
-msgstr "カードの窓"
-
-#: build/editor.js:1
-msgid "Limit the shine to the illustration window of a card-shaped image."
-msgstr "カード型の画像で、イラスト部分だけを光らせます。"
-
-#: build/editor.js:1
 msgid "16 more effects are available in All Effects."
 msgstr "All Effects 版では、さらに 16 種のエフェクトが使えます。"
 
@@ -191,3 +183,19 @@ msgstr "選択中の画像のホロ効果ピッカーを開く"
 #: build/editor.js:2
 msgid "← → choose · ⇧⌘⌫ remove"
 msgstr "← → で選択 · ⇧⌘⌫ で外す"
+
+#: build/editor.js:1
+msgid "On click"
+msgstr "クリック時"
+
+#: build/editor.js:1
+msgid "Lift: the image floats up with the shine on; click again, click outside or press Esc to put it back. On touch devices this replaces the tap flash."
+msgstr "「持ち上げる」はクリックで画像が浮き上がり光沢が点灯します。もう一度クリック、外側クリック、Esc で戻ります。タッチ端末では「タップで点灯」の代わりになります。"
+
+#: build/editor.js:1
+msgid "Nothing"
+msgstr "なし"
+
+#: build/editor.js:1
+msgid "Lift"
+msgstr "持ち上げる"

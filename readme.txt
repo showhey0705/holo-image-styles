@@ -23,7 +23,8 @@ The effects are a port of the wonderful open-source project *pokemon-cards-css* 
 * Lazy: shine layers are not painted until the image scrolls near the viewport (IntersectionObserver), and only the image under the pointer is ever animated.
 * Respects `prefers-reduced-motion`: no tilt, no transitions, no auto-play — just a fixed, gentle sheen.
 * Touch devices: choose between a short "tap to shine" flash, a static glare, or off — scrolling is never blocked.
-* Options per image in the **Holo effect** panel: effect, intensity, tilt, touch behaviour, auto showcase, card window.
+* Options per image in the **Holo effect** panel: pick the effect from thumbnails (hover to preview on the canvas), strength presets, shadow, click-to-lift, touch behaviour, auto showcase. Toolbar button or ⇧⌥⌘H opens the panel.
+* Rounded corners and transparent PNG/WebP cut-outs are respected: the shine never paints outside the image.
 * No external requests, no tracking, no accounts.
 
 **Editor preview**
@@ -75,7 +76,7 @@ When the visitor's system asks for reduced motion the plugin disables all moveme
 == Changelog ==
 
 = 1.0.0 =
-* Initial release: 7 families (Holo, Cosmos, Rainbow, Foil, Metallic, Reverse, Glare), Interactivity API front end, reduced-motion support, editor preview.
+* Initial release: 7 families (Holo, Cosmos, Rainbow, Foil, Metallic, Reverse, Glare), Interactivity API front end, reduced-motion support, thumbnail picker, click-to-lift, editor preview.
 
 == Upgrade Notice ==
 

@@ -705,3 +705,11 @@ JADE Pro 購読者は購入ボタンが出ず、最初からダウンロード�
 | 角丸 | フロント/エディタとも JS が画像（無ければ figure）の computed `border-radius` を読み `--holo-radius` に写す。テーマ CSS の角丸でも黒い角が出ない |
 | 影 | 属性 `holo.glow`: `soft`（既定・中立な落ち影）/ `none` / `color`（原作のファミリー色グロー）。`data-holo-glow` で出力 |
 | サムネ | `bin/thumbs.mjs` が実 CSS を Playwright で描画して生成。cosmos は bottom を不透明 PNG 由来（原作どおり）にし、middle/top は alpha を保持した WebP に修正 |
+
+## 付録 D. v1.2.3（2026-09-10）の変更
+
+| 項目 | 内容 |
+|---|---|
+| 透明画像 | `<img src>` が png/webp/gif/avif/svg のとき `--holo-mask:url(src)` を出し、shine/glare を画像自身でマスク。角丸のスキャン画像や切り抜きでも透明部分に光が乗らない（黒い角の根本対策） |
+| クリック | 属性 `holo.click`: `none`（既定）/ `lift`。lift はクリックで `--card-scale:1.12` に浮き上がり光沢を点灯、再クリック・外側クリック・Esc で戻る。タッチ端末では「タップで点灯」の代わりになる。reduced-motion では拡大しない |
+| UI | ツールバーはアイコンのみ。サムネは見出しなしで台帳順の 1 グリッド。「カードの窓」はパネルから非表示（属性は維持） |

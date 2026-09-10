@@ -17,6 +17,7 @@
 	--pointer-from-left: 0.25;
 	--card-opacity: 1;
 	--holo-clip: none;
+	--holo-mask: none;
 
 	position: relative;
 	isolation: isolate;
@@ -54,6 +55,12 @@
 	background-size: cover;
 	background-position: center;
 	border-radius: var(--holo-radius, 0);
+	-webkit-mask-image: var(--holo-mask);
+	mask-image: var(--holo-mask);
+	-webkit-mask-size: 100% 100%;
+	mask-size: 100% 100%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
 }
 
 .editor-styles-wrapper .wp-block-image[class*="is-style-holo-"] img {

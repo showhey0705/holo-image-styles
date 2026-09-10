@@ -50,6 +50,7 @@ const DEFAULTS = {
 	tilt: 1,
 	touch: 'tap',
 	glow: 'soft',
+	click: 'none',
 	showcase: false,
 	window: false,
 	...( DATA.defaults || {} ),
@@ -172,7 +173,7 @@ addFilter(
 );
 
 /* 2a. Thumbnail grid: every variant, grouped by family (radio semantics + arrow keys) */
-const VariantPicker = ( { value, onChange, clientId, columns = 3 } ) => {
+const VariantPicker = ( { value, onChange, clientId } ) => {
 	const clear = useCallback( () => setPreview( clientId, '' ), [ clientId ] );
 	useEffect( () => clear, [ clear ] );
 
@@ -206,7 +207,6 @@ const VariantPicker = ( { value, onChange, clientId, columns = 3 } ) => {
 			className="holo-picker"
 			role="radiogroup"
 			aria-label={ __( 'Effect', 'holo-image-styles' ) }
-			style={ { '--holo-picker-columns': columns } }
 			onMouseLeave={ clear }
 			onKeyDown={ onKeyDown }
 		>
@@ -254,7 +254,7 @@ const VariantPicker = ( { value, onChange, clientId, columns = 3 } ) => {
 };
 
 /* 2b. All controls (shared by the inspector panel and the toolbar popover) */
-const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
+const HoloControls = ( { attributes, setAttributes, clientId } ) => {
 	const holo = { ...DEFAULTS, ...( attributes.holo || {} ) };
 	const variant = currentVariant( attributes );
 	const hasHolo = !! variant;
@@ -285,7 +285,6 @@ const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
 			<VariantPicker
 				value={ variant }
 				clientId={ clientId }
-				columns={ compact ? 4 : 3 }
 				onChange={ choose }
 			/>
 			{ hasHolo && (
@@ -390,6 +389,27 @@ const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
 						<ToggleGroupControlOption
 							value="color"
 							label={ __( 'Glow', 'holo-image-styles' ) }
+						/>
+					</ToggleGroupControl>
+					<ToggleGroupControl
+						label={ __( 'On click', 'holo-image-styles' ) }
+						help={ __(
+							'Lift: the image floats up with the shine on; click again, click outside or press Esc to put it back. On touch devices this replaces the tap flash.',
+							'holo-image-styles'
+						) }
+						value={ holo.click }
+						onChange={ ( v ) => update( { click: v } ) }
+						isBlock
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+					>
+						<ToggleGroupControlOption
+							value="none"
+							label={ __( 'Nothing', 'holo-image-styles' ) }
+						/>
+						<ToggleGroupControlOption
+							value="lift"
+							label={ __( 'Lift', 'holo-image-styles' ) }
 						/>
 					</ToggleGroupControl>
 					<ToggleGroupControl
@@ -671,10 +691,13 @@ const HoloWrapper = ( { BlockListBlock, ...props } ) => {
 				.filter( Boolean )
 				.join( ' ' )
 		: props.className;
+	const url = props.attributes.url || '';
+	const alpha = /\.(png|webp|gif|avif|svg)(\?|#|$)/i.test( url );
 	const style = {
 		...( props.wrapperProps?.style || {} ),
 		'--holo-intensity': String( holo.intensity ),
 		'--holo-glow': DATA.families[ effectiveFamily ]?.glow || '',
+		...( alpha ? { '--holo-mask': `url(${ url })` } : {} ),
 	};
 	const wrapperProps = {
 		...props.wrapperProps,
