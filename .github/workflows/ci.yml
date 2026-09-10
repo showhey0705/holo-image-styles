@@ -59,14 +59,17 @@ jobs:
         run: npx wp-env start
       - name: Fixtures
         run: |
+          # wp-env activates every plugin in .wp-env.json; the two editions must never run together.
+          npx wp-env run cli wp plugin deactivate holo-image-styles-all || true
           npx wp-env run cli wp plugin activate holo-image-styles
+          npx wp-env run cli wp plugin list --status=active --field=name
           npx wp-env run cli bash /var/www/html/wp-content/plugins/holo-image-styles-src/tests/e2e/setup.sh
       - run: npx playwright install --with-deps chromium
       - name: Smoke (free edition)
         run: WP_BASE=http://localhost:8888 WP_USER=admin WP_PASS=password node tests/e2e/smoke.mjs
       - name: Gallery (All Effects edition)
         run: |
-          npx wp-env run cli wp plugin deactivate holo-image-styles
+          npx wp-env run cli wp plugin deactivate holo-image-styles || true
           npx wp-env run cli wp plugin activate holo-image-styles-all
           WP_BASE=http://localhost:8888 node tests/e2e/gallery.mjs
       - uses: actions/upload-artifact@v4

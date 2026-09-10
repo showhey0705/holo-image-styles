@@ -63,7 +63,9 @@ async function frontTest( reduced ) {
 	// Lightbox button still works.
 	const trigger = page.locator( '.holo__card .lightbox-trigger' );
 	check( label + 'lightbox trigger inside card', await trigger.count() === 1 );
-	await page.locator( '.holo__card[data-holo-variant="rare-holo"]' ).hover();
+	// The lightbox image is the "holo" family card; which variant it resolves to depends on the
+	// active edition, so find it by the trigger instead of hardcoding a variant slug.
+	await page.locator( '.holo__card' ).filter( { has: page.locator( '.lightbox-trigger' ) } ).first().hover();
 	await trigger.click( { force: false } ).catch( ( e ) => errors.push( 'lightbox click: ' + e.message ) );
 	await page.waitForTimeout( 400 );
 	const overlayOpen = await page.evaluate( () => document.querySelector( '.wp-lightbox-overlay' )?.classList.contains( 'active' ) );
