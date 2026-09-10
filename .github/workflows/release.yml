@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Sync package.json version with the tag
+        run: npm version --no-git-tag-version "${VERSION#v}"
+      - run: npm run build:dist
+      - name: Deploy the free edition to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          BUILD_DIR: dist/holo-image-styles
+          ASSETS_DIR: .wordpress-org
+          SLUG: holo-image-styles
+      # --- All Effects: same pipeline as BCP Builder (SPEC §14.6). GitHub Release gets no zip on purpose.
+      - name: Upload All Effects to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          V="${VERSION#v}"
+          curl --fail -X POST "$SUPABASE_URL/storage/v1/object/member-downloads/holo-image-styles-all/v${V}/holo-image-styles-all.zip" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "Content-Type: application/zip" \
+            --data-binary @dist/holo-image-styles-all.zip
+      - name: Register release row
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          V="${VERSION#v}"
+          curl --fail -X POST "$SUPABASE_URL/rest/v1/releases" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" -H "Prefer: resolution=merge-duplicates" \
+            -d "{\"product\":\"holo-image-styles-all\",\"version\":\"${V}\",\"path\":\"holo-image-styles-all/v${V}/holo-image-styles-all.zip\",\"size\":$(stat -c%s dist/holo-image-styles-all.zip)}"
+      - name: Write update.json
+        run: node bin/write-update-json.mjs "${VERSION#v}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: update-json
+          path: dist/update.json
+      # Publishing dist/update.json to https://pro.jadeclinic.jp/holo-image-styles/update.json follows the
+      # JADE Pro deploy procedure (static path). Add that step here once the path is decided.

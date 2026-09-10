@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-10T03:13:13+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: holo-image-styles\n"
+
+#: src/php/class-edition.php:86
+msgid "Holo Image Styles (All Effects) is active."
+msgstr ""
+
+#: src/php/class-edition.php:87
+msgid "The free edition has been deactivated; the All Effects edition includes everything it had."
+msgstr ""
+
+#: src/php/class-edition.php:96
+msgid "Delete the free edition"
+msgstr ""
+
+#: src/php/class-edition.php:99
+msgid "Please delete \"Holo Image Styles\" (free edition) from the Plugins list."
+msgstr ""
+
+#: src/php/class-edition.php:104
+msgid "Not now"
+msgstr ""
+
+#: src/php/class-edition.php:116
+msgid "You are not allowed to delete plugins."
+msgstr ""
+
+#: src/php/class-edition.php:143
+msgid "You are not allowed to do that."
+msgstr ""
+
+#: src/php/class-edition.php:251
+msgid "All 23 holographic effects for the Image block."
+msgstr ""
+
+#: src/php/class-edition.php:255
+msgid "View the changelog"
+msgstr ""
+
+#. translators: %s: effect name.
+#: src/editor/index.js:81
+#, js-format
+msgid "\"%s\" is not included in this edition; the default effect of this family is used instead."
+msgstr ""
+
+#: src/editor/index.js:100
+msgid "Holo effect"
+msgstr ""
+
+#: src/editor/index.js:107
+msgid "Effect"
+msgstr ""
+
+#: src/editor/index.js:115
+msgid "Intensity"
+msgstr ""
+
+#: src/editor/index.js:125
+msgid "Tilt"
+msgstr ""
+
+#: src/editor/index.js:135
+msgid "Touch devices"
+msgstr ""
+
+#: src/editor/index.js:142
+msgid "Tap"
+msgstr ""
+
+#: src/editor/index.js:143
+msgid "Glare"
+msgstr ""
+
+#: src/editor/index.js:144
+msgid "Off"
+msgstr ""
+
+#: src/editor/index.js:147
+msgid "Auto showcase"
+msgstr ""
+
+#: src/editor/index.js:148
+msgid "Plays a short 4-second sweep once when the image scrolls into view."
+msgstr ""
+
+#: src/editor/index.js:154
+msgid "Card window"
+msgstr ""
+
+#: src/editor/index.js:155
+msgid "Limit the shine to the illustration window of a card-shaped image."
+msgstr ""
+
+#: src/editor/index.js:162
+msgid "16 more effects are available in All Effects."
+msgstr ""
+
+#: src/editor/index.js:163
+msgid "Learn more"
+msgstr ""

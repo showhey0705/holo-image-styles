@@ -14,12 +14,19 @@
   <rule ref="PHPCompatibilityWP"/>
   <rule ref="WordPress.WP.I18n">
     <properties>
-      <property name="text_domain" type="array" value="holo-image-styles"/>
+      <property name="text_domain" type="array">
+        <element value="holo-image-styles"/>
+      </property>
     </properties>
   </rule>
   <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
     <properties>
-      <property name="prefixes" type="array" value="holo_image_styles,holo,HoloImageStyles,HOLO_"/>
+      <property name="prefixes" type="array">
+        <element value="holo_image_styles"/>
+        <element value="holo"/>
+        <element value="HoloImageStyles"/>
+        <element value="HOLO_"/>
+      </property>
     </properties>
   </rule>
 </ruleset>

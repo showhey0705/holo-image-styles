@@ -117,6 +117,14 @@
 
 .holo__card.is-interacting {
 	z-index: 2;
+	/* Glow while interacting (from the original .card.active box-shadow). */
+	box-shadow:
+		0 0 3px -1px white,
+		0 0 3px 1px var(--card-edge),
+		0 0 12px 2px var(--holo-glow),
+		0 10px 20px -5px rgba(0, 0, 0, 0.6),
+		0 0 40px -30px var(--holo-glow),
+		0 0 50px -20px var(--holo-glow);
 	transition:
 		--pointer-x 0.08s linear,
 		--pointer-y 0.08s linear,
@@ -234,17 +242,6 @@
 	border-radius: inherit;
 	background-size: cover;
 	background-position: center;
-}
-
-/* Glow while interacting (from the original .card.active box-shadow). */
-.holo__card.is-interacting {
-	box-shadow:
-		0 0 3px -1px white,
-		0 0 3px 1px var(--card-edge),
-		0 0 12px 2px var(--holo-glow),
-		0 10px 20px -5px rgba(0, 0, 0, 0.6),
-		0 0 40px -30px var(--holo-glow),
-		0 0 50px -20px var(--holo-glow);
 }
 
 /* 5. "Window" option: only the illustration area of a card-shaped image glows (SPEC §4.4). */

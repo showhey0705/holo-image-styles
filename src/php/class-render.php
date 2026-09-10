@@ -45,7 +45,7 @@ final class Render {
 	 * @param array<string,mixed> $attrs Block attributes.
 	 * @return string Family slug or ''.
 	 */
-	public static function family_from_attrs( array $attrs ): string {
+	public static function detect_family( array $attrs ): string {
 		$class = isset( $attrs['className'] ) && is_string( $attrs['className'] ) ? $attrs['className'] : '';
 		if ( '' === $class || ! preg_match( '/\bis-style-holo-([a-z]+)\b/', $class, $m ) ) {
 			return '';
@@ -61,10 +61,10 @@ final class Render {
 	 * @return array{variant:string,intensity:float,tilt:float,touch:string,showcase:bool,window:bool}
 	 */
 	public static function sanitize_holo( $raw, string $family ): array {
-		$raw = is_array( $raw ) ? $raw : [];
-		$num = static function ( $v, float $default ): float {
+		$raw   = is_array( $raw ) ? $raw : [];
+		$num   = static function ( $v, float $fallback ): float {
 			if ( ! is_numeric( $v ) ) {
-				return $default;
+				return $fallback;
 			}
 			return max( 0.0, min( 1.5, (float) $v ) );
 		};
@@ -91,7 +91,7 @@ final class Render {
 	 * @param array<string,mixed>                                                                 $attrs  Block attributes (for border radius).
 	 */
 	public static function card_style( string $family, array $holo, array $attrs = [] ): string {
-		$fam  = Variants::family( $family );
+		$fam  = Variants::get_family( $family );
 		$var  = Variants::variant( $holo['variant'] );
 		$vars = [
 			'--holo-intensity' => self::fmt( $holo['intensity'] ),
@@ -128,7 +128,7 @@ final class Render {
 	 */
 	public function inject( string $content, array $block ): string {
 		$attrs  = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : [];
-		$family = self::family_from_attrs( $attrs );
+		$family = self::detect_family( $attrs );
 		if ( '' === $family || ! str_contains( $content, '<img' ) ) {
 			return $content;
 		}
@@ -136,7 +136,7 @@ final class Render {
 		// Find the figure carrying the style class (with alignments the figure sits inside a div.wp-block-image).
 		$p     = new \WP_HTML_Tag_Processor( $content );
 		$found = false;
-		while ( $p->next_tag( 'FIGURE' ) ) {
+		while ( $p->next_tag( [ 'tag_name' => 'FIGURE' ] ) ) {
 			if ( $p->has_class( 'is-style-holo-' . $family ) ) {
 				$found = true;
 				break;
@@ -189,7 +189,7 @@ final class Render {
 			esc_attr( $region_ns ),
 			esc_attr( self::INTERACTIVITY_NS )
 		);
-		$layers = '<span class="holo__shine" aria-hidden="true"></span><span class="holo__glare" aria-hidden="true"></span>';
+		$layers       = '<span class="holo__shine" aria-hidden="true"></span><span class="holo__glare" aria-hidden="true"></span>';
 
 		$html = substr( $html, 0, $gt + 1 ) . $wrapper_open . $inner . $layers . '</div>' . substr( $html, $close );
 		$html = str_replace( ' data-holo-marker="1"', '', $html );

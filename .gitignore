@@ -9,3 +9,4 @@ test-results/
 playwright-report/
 tests/e2e/artifacts/*
 !tests/e2e/artifacts/.gitkeep
+wordpress/

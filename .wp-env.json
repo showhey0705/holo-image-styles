@@ -1,0 +1,15 @@
+{
+  "core": "WordPress/WordPress#7.1-branch",
+  "phpVersion": "8.1",
+  "plugins": [
+    "./dist/holo-image-styles",
+    "./dist/holo-image-styles-all"
+  ],
+  "mappings": {
+    "wp-content/plugins/holo-image-styles-src": "."
+  },
+  "config": {
+    "WP_DEBUG": true,
+    "SCRIPT_DEBUG": false
+  }
+}

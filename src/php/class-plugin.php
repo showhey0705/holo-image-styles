@@ -92,7 +92,7 @@ final class Plugin {
 		wp_register_style( 'holo-image-styles-base', self::url( 'css/base.css' ), [], $ver );
 		wp_register_style( 'holo-image-styles-editor', self::url( 'css/editor.css' ), [ 'holo-image-styles-base' ], $ver );
 
-		foreach ( Variants::families() as $family => $def ) {
+		foreach ( Variants::all_families() as $family => $def ) {
 			$handle = 'holo-image-styles-' . $family;
 			wp_register_style( $handle, self::url( 'css/families/' . $family . '.css' ), [ 'holo-image-styles-base' ], $ver );
 			register_block_style(

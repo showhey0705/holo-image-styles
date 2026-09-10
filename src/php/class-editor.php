@@ -61,7 +61,7 @@ final class Editor {
 		return [
 			'edition'   => Variants::edition(),
 			'version'   => HOLO_IMAGE_STYLES_VERSION,
-			'families'  => Variants::families(),
+			'families'  => Variants::all_families(),
 			'variants'  => $variants,
 			'defaults'  => Render::DEFAULTS,
 			'upsellUrl' => 'free' === Variants::edition() ? 'https://pro.jadeclinic.jp/holo-image-styles/' : '',

@@ -22,7 +22,12 @@ import {
 import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
-const DATA = window.holoImageStyles || { edition: 'free', families: {}, variants: {}, defaults: {} };
+const DATA = window.holoImageStyles || {
+	edition: 'free',
+	families: {},
+	variants: {},
+	defaults: {},
+};
 
 const DEFAULTS = {
 	variant: '',
@@ -45,26 +50,29 @@ const variantsFor = ( family ) =>
 		.map( ( [ key, v ] ) => ( { value: key, label: v.label } ) );
 
 /* 1. Attribute */
-addFilter( 'blocks.registerBlockType', 'holo-image-styles/attributes', ( settings, name ) => {
-	if ( name !== 'core/image' ) {
-		return settings;
+addFilter(
+	'blocks.registerBlockType',
+	'holo-image-styles/attributes',
+	( settings, name ) => {
+		if ( name !== 'core/image' ) {
+			return settings;
+		}
+		return {
+			...settings,
+			attributes: {
+				...settings.attributes,
+				holo: { type: 'object', default: DEFAULTS },
+			},
+		};
 	}
-	return {
-		...settings,
-		attributes: {
-			...settings.attributes,
-			holo: { type: 'object', default: DEFAULTS },
-		},
-	};
-} );
+);
 
 /* 2. Inspector panel */
 const HoloPanel = ( { attributes, setAttributes } ) => {
 	const family = familyFromClass( attributes.className );
 	const holo = { ...DEFAULTS, ...( attributes.holo || {} ) };
-	const update = ( patch ) => setAttributes( { holo: { ...holo, ...patch } } );
-	const options = variantsFor( family );
-	const familyDefault = DATA.families[ family ]?.default || '';
+	const update = ( patch ) =>
+		setAttributes( { holo: { ...holo, ...patch } } );
 	const [ fallbackNotice, setFallbackNotice ] = useState( '' );
 
 	// Family changed (className) or a variant that this edition doesn't have → reset to the family default.
@@ -78,7 +86,10 @@ const HoloPanel = ( { attributes, setAttributes } ) => {
 			setFallbackNotice(
 				sprintf(
 					/* translators: %s: effect name. */
-					__( '"%s" is not included in this edition; the default effect of this family is used instead.', 'holo-image-styles' ),
+					__(
+						'"%s" is not included in this edition; the default effect of this family is used instead.',
+						'holo-image-styles'
+					),
 					current
 				)
 			);
@@ -95,11 +106,21 @@ const HoloPanel = ( { attributes, setAttributes } ) => {
 		return null;
 	}
 
+	const options = variantsFor( family );
+	const familyDefault = DATA.families[ family ]?.default || '';
+
 	return (
 		<InspectorControls>
-			<PanelBody title={ __( 'Holo effect', 'holo-image-styles' ) } initialOpen>
+			<PanelBody
+				title={ __( 'Holo effect', 'holo-image-styles' ) }
+				initialOpen
+			>
 				{ fallbackNotice && (
-					<Notice status="info" isDismissible onRemove={ () => setFallbackNotice( '' ) }>
+					<Notice
+						status="info"
+						isDismissible
+						onRemove={ () => setFallbackNotice( '' ) }
+					>
 						{ fallbackNotice }
 					</Notice>
 				) }
@@ -107,14 +128,18 @@ const HoloPanel = ( { attributes, setAttributes } ) => {
 					label={ __( 'Effect', 'holo-image-styles' ) }
 					value={ holo.variant || familyDefault }
 					options={ options }
-					onChange={ ( v ) => update( { variant: v === familyDefault ? '' : v } ) }
+					onChange={ ( v ) =>
+						update( { variant: v === familyDefault ? '' : v } )
+					}
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 				/>
 				<RangeControl
 					label={ __( 'Intensity', 'holo-image-styles' ) }
 					value={ Math.round( holo.intensity * 100 ) }
-					onChange={ ( v ) => update( { intensity: ( v ?? 100 ) / 100 } ) }
+					onChange={ ( v ) =>
+						update( { intensity: ( v ?? 100 ) / 100 } )
+					}
 					min={ 0 }
 					max={ 150 }
 					step={ 5 }
@@ -139,28 +164,48 @@ const HoloPanel = ( { attributes, setAttributes } ) => {
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 				>
-					<ToggleGroupControlOption value="tap" label={ __( 'Tap', 'holo-image-styles' ) } />
-					<ToggleGroupControlOption value="glare" label={ __( 'Glare', 'holo-image-styles' ) } />
-					<ToggleGroupControlOption value="off" label={ __( 'Off', 'holo-image-styles' ) } />
+					<ToggleGroupControlOption
+						value="tap"
+						label={ __( 'Tap', 'holo-image-styles' ) }
+					/>
+					<ToggleGroupControlOption
+						value="glare"
+						label={ __( 'Glare', 'holo-image-styles' ) }
+					/>
+					<ToggleGroupControlOption
+						value="off"
+						label={ __( 'Off', 'holo-image-styles' ) }
+					/>
 				</ToggleGroupControl>
 				<ToggleControl
 					label={ __( 'Auto showcase', 'holo-image-styles' ) }
-					help={ __( 'Plays a short 4-second sweep once when the image scrolls into view.', 'holo-image-styles' ) }
+					help={ __(
+						'Plays a short 4-second sweep once when the image scrolls into view.',
+						'holo-image-styles'
+					) }
 					checked={ !! holo.showcase }
 					onChange={ ( v ) => update( { showcase: !! v } ) }
 					__nextHasNoMarginBottom
 				/>
 				<ToggleControl
 					label={ __( 'Card window', 'holo-image-styles' ) }
-					help={ __( 'Limit the shine to the illustration window of a card-shaped image.', 'holo-image-styles' ) }
+					help={ __(
+						'Limit the shine to the illustration window of a card-shaped image.',
+						'holo-image-styles'
+					) }
 					checked={ !! holo.window }
 					onChange={ ( v ) => update( { window: !! v } ) }
 					__nextHasNoMarginBottom
 				/>
 				{ DATA.edition === 'free' && DATA.upsellUrl && (
 					<p className="holo-image-styles__help">
-						{ __( '16 more effects are available in All Effects.', 'holo-image-styles' ) }{ ' ' }
-						<ExternalLink href={ DATA.upsellUrl }>{ __( 'Learn more', 'holo-image-styles' ) }</ExternalLink>
+						{ __(
+							'16 more effects are available in All Effects.',
+							'holo-image-styles'
+						) }{ ' ' }
+						<ExternalLink href={ DATA.upsellUrl }>
+							{ __( 'Learn more', 'holo-image-styles' ) }
+						</ExternalLink>
 					</p>
 				) }
 			</PanelBody>
@@ -195,7 +240,10 @@ const withHoloWrapper = createHigherOrderComponent( ( BlockListBlock ) => {
 			return <BlockListBlock { ...props } />;
 		}
 		const holo = { ...DEFAULTS, ...( props.attributes.holo || {} ) };
-		const variant = holo.variant && DATA.variants[ holo.variant ] ? holo.variant : DATA.families[ family ]?.default || '';
+		const variant =
+			holo.variant && DATA.variants[ holo.variant ]
+				? holo.variant
+				: DATA.families[ family ]?.default || '';
 		const style = {
 			...( props.wrapperProps?.style || {} ),
 			'--holo-intensity': String( holo.intensity ),
@@ -211,4 +259,8 @@ const withHoloWrapper = createHigherOrderComponent( ( BlockListBlock ) => {
 	};
 }, 'withHoloWrapper' );
 
-addFilter( 'editor.BlockListBlock', 'holo-image-styles/wrapper', withHoloWrapper );
+addFilter(
+	'editor.BlockListBlock',
+	'holo-image-styles/wrapper',
+	withHoloWrapper
+);

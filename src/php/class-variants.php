@@ -58,7 +58,7 @@ final class Variants {
 	 * Edition this ledger was built for ('free' | 'all').
 	 */
 	public static function edition(): string {
-		return (string) ( self::ledger()['edition'] ?? HOLO_EDITION );
+		return self::ledger()['edition'];
 	}
 
 	/**
@@ -66,7 +66,7 @@ final class Variants {
 	 *
 	 * @return array<string,Family>
 	 */
-	public static function families(): array {
+	public static function all_families(): array {
 		return self::ledger()['families'];
 	}
 
@@ -85,7 +85,7 @@ final class Variants {
 	 * @param string $family Family slug.
 	 */
 	public static function has_family( string $family ): bool {
-		return isset( self::families()[ $family ] );
+		return isset( self::all_families()[ $family ] );
 	}
 
 	/**
@@ -103,8 +103,8 @@ final class Variants {
 	 * @param string $family Family slug.
 	 * @return Family|null
 	 */
-	public static function family( string $family ): ?array {
-		return self::families()[ $family ] ?? null;
+	public static function get_family( string $family ): ?array {
+		return self::all_families()[ $family ] ?? null;
 	}
 
 	/**
@@ -123,7 +123,7 @@ final class Variants {
 	 * @param string $family Family slug.
 	 */
 	public static function default_for( string $family ): string {
-		return (string) ( self::families()[ $family ]['default'] ?? '' );
+		return (string) ( self::all_families()[ $family ]['default'] ?? '' );
 	}
 
 	/**

@@ -9,7 +9,8 @@ import { store, getElement } from '@wordpress/interactivity';
 
 const NS = 'holo-image-styles';
 
-const reducedMotion = () => window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+const reducedMotion = () =>
+	window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
 const hoverable = () => window.matchMedia( '(hover: hover)' ).matches;
 const clamp = ( v, a = 0, b = 100 ) => Math.min( b, Math.max( a, v ) );
 const adjust = ( v, a, b, c, d ) => c + ( ( d - c ) * ( v - a ) ) / ( b - a );
@@ -34,7 +35,13 @@ const setVars = ( el, vars ) => {
 	}
 };
 
-/** Convert a 0–100 pointer position into the full variable set (same math as the original). */
+/**
+ * Convert a 0–100 pointer position into the full variable set (same math as the original).
+ *
+ * @param {number} x Pointer X in percent of the card width.
+ * @param {number} y Pointer Y in percent of the card height.
+ * @return {Object<string, string|number>} Custom-property values (without the leading "--").
+ */
 const varsFromPointer = ( x, y ) => {
 	const cx = x - 50;
 	const cy = y - 50;
@@ -46,13 +53,19 @@ const varsFromPointer = ( x, y ) => {
 		'rotate-x': round( -( cx / 3.5 ) ) + 'deg',
 		'rotate-y': round( cy / 3.5 ) + 'deg',
 		'card-opacity': 1,
-		'pointer-from-center': round( clamp( Math.hypot( cx, cy ) / 50, 0, 1 ) ),
+		'pointer-from-center': round(
+			clamp( Math.hypot( cx, cy ) / 50, 0, 1 )
+		),
 		'pointer-from-top': round( y / 100 ),
 		'pointer-from-left': round( x / 100 ),
 	};
 };
 
-/** One paint per frame: the latest pending pointer wins. */
+/**
+ * One paint per frame: the latest pending pointer wins.
+ *
+ * @param {HTMLElement} el The .holo__card element.
+ */
 const flush = ( el ) => {
 	el._holoRaf ??= requestAnimationFrame( () => {
 		el._holoRaf = null;
@@ -84,7 +97,12 @@ const stopShowcase = ( el ) => {
 };
 
 const startShowcase = ( el ) => {
-	if ( reducedMotion() || document.hidden || el._holoShown || ! el.classList.contains( 'is-holo-armed' ) ) {
+	if (
+		reducedMotion() ||
+		document.hidden ||
+		el._holoShown ||
+		! el.classList.contains( 'is-holo-armed' )
+	) {
 		return;
 	}
 	el._holoShown = true;
@@ -93,7 +111,10 @@ const startShowcase = ( el ) => {
 	el._holoShowInterval = setInterval( () => {
 		r += 0.05;
 		// Orbit the pointer around the card; sin/cos like the original showcase.
-		el._holoPending = { x: 50 + Math.sin( r ) * 45, y: 50 + Math.cos( r ) * 45 };
+		el._holoPending = {
+			x: 50 + Math.sin( r ) * 45,
+			y: 50 + Math.cos( r ) * 45,
+		};
 		flush( el );
 	}, 20 );
 	el._holoShowEnd = setTimeout( () => rest( el ), 4000 );
@@ -107,7 +128,11 @@ const observe = ( el ) => {
 			for ( const e of entries ) {
 				e.target.classList.toggle( 'is-holo-armed', e.isIntersecting );
 				if ( e.isIntersecting ) {
-					if ( e.target.dataset.holoShowcase === '1' && ! e.target._holoShown && ! e.target._holoShowTimer ) {
+					if (
+						e.target.dataset.holoShowcase === '1' &&
+						! e.target._holoShown &&
+						! e.target._holoShowTimer
+					) {
 						e.target._holoShowTimer = setTimeout( () => {
 							e.target._holoShowTimer = null;
 							startShowcase( e.target );
@@ -136,7 +161,9 @@ const bindVisibility = () => {
 	visibilityBound = true;
 	document.addEventListener( 'visibilitychange', () => {
 		if ( document.hidden ) {
-			document.querySelectorAll( '.holo__card.is-interacting' ).forEach( rest );
+			document
+				.querySelectorAll( '.holo__card.is-interacting' )
+				.forEach( rest );
 		}
 	} );
 };
@@ -145,12 +172,19 @@ store( NS, {
 	actions: {
 		move( event ) {
 			const { ref } = getElement();
-			if ( reducedMotion() || document.hidden || ! ref.classList.contains( 'is-holo-armed' ) ) {
+			if (
+				reducedMotion() ||
+				document.hidden ||
+				! ref.classList.contains( 'is-holo-armed' )
+			) {
 				return;
 			}
 			if ( event.pointerType === 'touch' ) {
 				// Touch only follows the finger after pointerdown (touch=tap); see `down`.
-				if ( ref.dataset.holoTouch !== 'tap' || ! ref._holoTouchActive ) {
+				if (
+					ref.dataset.holoTouch !== 'tap' ||
+					! ref._holoTouchActive
+				) {
 					return;
 				}
 			}
@@ -172,7 +206,11 @@ store( NS, {
 		down( event ) {
 			const { ref } = getElement();
 			// Touch devices without hover: light up for 1.5 s and spring back (touch=tap).
-			if ( event.pointerType !== 'touch' || hoverable() || ref.dataset.holoTouch !== 'tap' ) {
+			if (
+				event.pointerType !== 'touch' ||
+				hoverable() ||
+				ref.dataset.holoTouch !== 'tap'
+			) {
 				return;
 			}
 			ref._holoTouchActive = true;
@@ -198,8 +236,17 @@ store( NS, {
 				}
 			}
 			// "glare" touch mode: a static sheen on touch-only devices, no tilt.
-			if ( ref.dataset.holoTouch === 'glare' && ! hoverable() && ! reducedMotion() ) {
-				setVars( ref, { ...varsFromPointer( 28, 18 ), 'rotate-x': '0deg', 'rotate-y': '0deg', 'card-opacity': 0.6 } );
+			if (
+				ref.dataset.holoTouch === 'glare' &&
+				! hoverable() &&
+				! reducedMotion()
+			) {
+				setVars( ref, {
+					...varsFromPointer( 28, 18 ),
+					'rotate-x': '0deg',
+					'rotate-y': '0deg',
+					'card-opacity': 0.6,
+				} );
 			}
 		},
 	},

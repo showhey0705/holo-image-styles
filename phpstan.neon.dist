@@ -7,6 +7,6 @@ parameters:
     - src/uninstall.php
   scanFiles:
     - tests/phpstan/bootstrap.php
+  reportUnmatchedIgnoredErrors: false
   ignoreErrors:
-    - '#Function wp_register_script_module not found#'
-    - '#Function wp_enqueue_script_module not found#'
+    - '#Function wp_(register|enqueue)_script_module not found#'

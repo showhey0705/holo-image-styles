@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer
+      - run: npm ci
+      - run: composer install --no-interaction --prefer-dist
+      - name: Ledger and CSS consistency
+        run: node bin/check-variants.mjs
+      - name: Lint JS/CSS
+        run: npm run lint:js && npm run lint:css
+      - name: Build bundles and both editions
+        run: npm run build:dist
+      - name: PHP lint
+        run: composer lint
+      - name: Download WordPress core (for PHPStan require paths)
+        run: |
+          curl -sSL https://wordpress.org/latest.tar.gz | tar xz
+      - name: PHPStan (level 6)
+        run: composer phpstan
+      - name: PHPCS (WordPress-Extra + PHPCompatibilityWP)
+        run: composer phpcs
+      - name: Render injection harness (WP_HTML_Tag_Processor)
+        run: |
+          WP_CORE=$PWD/wordpress php tests/php/render-harness.php
+          WP_CORE=$PWD/wordpress HOLO_DIST=holo-image-styles php tests/php/render-harness.php
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zips
+          path: dist/*.zip
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:dist
+      - name: Start wp-env
+        run: npx wp-env start
+      - name: Fixtures
+        run: |
+          npx wp-env run cli bash -c 'curl -sSL -o /tmp/card.jpg https://picsum.photos/480/672 || true'
+          npx wp-env run cli wp plugin activate holo-image-styles
+          npx wp-env run cli bash /var/www/html/wp-content/plugins/holo-image-styles-src/tests/e2e/setup.sh /tmp/card.jpg
+      - run: npx playwright install --with-deps chromium
+      - name: Smoke (free edition)
+        run: WP_BASE=http://localhost:8888 WP_USER=admin WP_PASS=password node tests/e2e/smoke.mjs
+      - name: Gallery + edition switch (All Effects)
+        run: |
+          npx wp-env run cli wp plugin activate holo-image-styles-all
+          WP_BASE=http://localhost:8888 node tests/e2e/gallery.mjs
+          WP_BASE=http://localhost:8888 WP_USER=admin WP_PASS=password WP_PLUGINS_DIR=$PWD/dist node tests/e2e/edition.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-artifacts
+          path: tests/e2e/artifacts
