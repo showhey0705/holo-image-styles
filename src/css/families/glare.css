@@ -1,0 +1,14 @@
+/*
+ * Family: glare — Glare only (free)
+ * The lightest effect: just the base glare layer from base.css and the 3D tilt. No shine layer.
+ */
+
+/* @variant basic */
+.is-style-holo-glare .holo__card[data-holo-variant="basic"] .holo__shine {
+	display: none;
+}
+
+.is-style-holo-glare .holo__card[data-holo-variant="basic"] .holo__glare {
+	filter: brightness(1) contrast(1.2);
+}
+/* @end */

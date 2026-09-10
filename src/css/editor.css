@@ -1,0 +1,137 @@
+/*
+ * Holo Image Styles — editor.css (editor iframe only; SPEC §6.3)
+ *
+ * The editor renders core/image itself (React), so the server-side .holo__card wrapper does not exist here.
+ * This is a deliberately simple two-layer preview drawn with figure::before (shine) and figure::after (glare)
+ * at a fixed pointer position, with a slightly different fixed position on :hover. No JS pointer tracking.
+ */
+
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"] {
+	--holo-intensity: 1;
+	--pointer-x: 25%;
+	--pointer-y: 10%;
+	--background-x: 44%;
+	--background-y: 36%;
+	--pointer-from-center: 0.9;
+	--pointer-from-top: 0.11;
+	--pointer-from-left: 0.25;
+	--card-opacity: 1;
+	--holo-clip: none;
+
+	position: relative;
+	isolation: isolate;
+	transition: --pointer-x 0.6s ease, --pointer-y 0.6s ease, --background-x 0.6s ease, --background-y 0.6s ease;
+}
+
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"]:hover {
+	--pointer-x: 65%;
+	--pointer-y: 40%;
+	--background-x: 52%;
+	--background-y: 50%;
+	--pointer-from-left: 0.65;
+	--pointer-from-top: 0.4;
+}
+
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"][data-holo-window="1"] {
+	--holo-clip: inset(9.85% 8% 52.85% 8%);
+}
+
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"]::before,
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"]::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1;
+	background-size: cover;
+	background-position: center;
+	border-radius: inherit;
+}
+
+/* Shine layer (family specific colours; roughly the first gradient of each family's default variant). */
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"]::before {
+	opacity: calc(0.7 * var(--card-opacity) * var(--holo-intensity));
+	mix-blend-mode: color-dodge;
+	filter: brightness(0.9) contrast(1.6) saturate(1.1);
+	clip-path: var(--holo-clip);
+}
+
+/* Glare layer. */
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"]::after {
+	background-image: radial-gradient(
+		farthest-corner circle at var(--pointer-x) var(--pointer-y),
+		hsla(0, 0%, 100%, 0.8) 10%,
+		hsla(0, 0%, 100%, 0.55) 20%,
+		hsla(0, 0%, 0%, 0.5) 90%
+	);
+	opacity: calc(0.6 * var(--card-opacity) * var(--holo-intensity));
+	mix-blend-mode: overlay;
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-holo::before {
+	background-image:
+		repeating-linear-gradient(110deg, #c929f1, #0dbde9, #21e985, #eedf10, #f80e35, #c929f1, #0dbde9, #21e985, #eedf10, #f80e35),
+		repeating-linear-gradient(90deg, #000 0 2px, #666 2px 4px);
+	background-position: calc(((50% - var(--background-x)) * 2.6) + 50%) calc(((50% - var(--background-y)) * 3.5) + 50%), center;
+	background-size: 400% 400%, cover;
+	background-blend-mode: overlay;
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-cosmos::before {
+	background-image:
+		repeating-linear-gradient(82deg, hsl(53, 65%, 60%) 4%, hsl(93, 56%, 50%) 8%, hsl(176, 54%, 49%) 12%, hsl(228, 59%, 55%) 16%, hsl(283, 60%, 55%) 20%, hsl(326, 59%, 51%) 24%, hsl(283, 60%, 55%) 28%, hsl(228, 59%, 55%) 32%, hsl(176, 54%, 49%) 36%, hsl(93, 56%, 50%) 40%, hsl(53, 65%, 60%) 44%),
+		radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y), hsla(180, 100%, 89%, 0.5) 5%, hsla(180, 14%, 57%, 0.3) 40%, #000 130%);
+	background-size: 400% 900%, cover;
+	background-position: calc(10% + (var(--pointer-from-left) * 80%)) calc(10% + (var(--pointer-from-top) * 80%)), center;
+	background-blend-mode: multiply;
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-rainbow::before {
+	background-image:
+		linear-gradient(-45deg, hsl(0, 57%, 37%), hsl(180, 60%, 35%)),
+		linear-gradient(-30deg, hsl(0, 57%, 37%), hsl(40, 53%, 39%), hsl(90, 60%, 35%), hsl(180, 60%, 35%), hsl(210, 57%, 39%), hsl(280, 55%, 31%), hsl(0, 57%, 37%), hsl(40, 53%, 39%), hsl(90, 60%, 35%), hsl(180, 60%, 35%), hsl(210, 57%, 39%), hsl(280, 55%, 31%));
+	background-blend-mode: luminosity;
+	background-size: 200% 200%, 400% 400%;
+	background-position: calc(25% + (50% * var(--pointer-from-left))) calc(25% + (50% * var(--pointer-from-top))), calc(25% + (var(--pointer-x) / 2)) calc(25% + (var(--pointer-y) / 2));
+	filter: brightness(0.9) contrast(2) saturate(0.8);
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-foil::before {
+	background-image:
+		repeating-linear-gradient(0deg, hsl(2, 100%, 73%) 5%, hsl(53, 100%, 69%) 10%, hsl(93, 100%, 69%) 15%, hsl(176, 100%, 76%) 20%, hsl(228, 100%, 74%) 25%, hsl(283, 100%, 73%) 30%, hsl(2, 100%, 73%) 35%),
+		repeating-linear-gradient(133deg, #0e152e 0%, hsl(180, 10%, 60%) 3.8%, hsl(180, 29%, 66%) 4.5%, hsl(180, 10%, 60%) 5.2%, #0e152e 10%, #0e152e 12%);
+	background-blend-mode: hue;
+	background-size: 200% 700%, 300% 100%;
+	background-position: 0% var(--background-y), var(--background-x) var(--background-y);
+	filter: brightness(0.7) contrast(2) saturate(1.5);
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-metallic::before {
+	background-image:
+		conic-gradient(hsl(176, 100%, 76%), hsl(228, 100%, 74%), hsl(283, 100%, 73%), hsl(2, 100%, 73%), hsl(176, 100%, 76%)),
+		linear-gradient(45deg, hsl(46, 95%, 50%), hsl(52, 100%, 69%)),
+		radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y), hsla(0, 0%, 0%, 0.98) 10%, hsla(0, 0%, 95%, 0.15) 90%);
+	background-blend-mode: overlay, multiply;
+	filter: brightness(0.6) contrast(2) saturate(1);
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-reverse::before {
+	background-image:
+		radial-gradient(circle at var(--pointer-x) var(--pointer-y), #fff 5%, #000 50%, #fff 80%),
+		linear-gradient(-45deg, #000 15%, #fff, #000 85%);
+	background-blend-mode: soft-light;
+	background-size: 120% 120%, 200% 200%;
+	background-position: center, calc(100% * var(--pointer-from-left)) calc(100% * var(--pointer-from-top));
+	filter: brightness(0.55) contrast(1.5);
+}
+
+.editor-styles-wrapper .wp-block-image.is-style-holo-glare::before {
+	content: none;
+}
+
+/* Inspector help line (free edition). */
+.holo-image-styles__help {
+	margin: 8px 0 0;
+	font-size: 12px;
+	color: #757575;
+}

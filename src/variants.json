@@ -1,37 +1,249 @@
 {
   "$schema": "./variants.schema.json",
   "families": {
-    "holo":     { "label": "Holo",     "default": "rare-holo",    "glow": "hsl(175 100% 90%)" },
-    "cosmos":   { "label": "Cosmos",   "default": "cosmos",       "glow": "hsl(228 80% 70%)" },
-    "rainbow":  { "label": "Rainbow",  "default": "rainbow-rare", "glow": "hsl(323 100% 80%)" },
-    "foil":     { "label": "Foil",     "default": "v-full-art",   "glow": "hsl(192 97% 60%)" },
-    "metallic": { "label": "Metallic", "default": "secret-rare",  "glow": "hsl(47 100% 78%)" },
-    "reverse":  { "label": "Reverse",  "default": "reverse-holo", "glow": "hsl(54 87% 63%)" },
-    "glare":    { "label": "Glare",    "default": "basic",        "glow": "hsl(0 0% 100%)" }
+    "holo": {
+      "label": "Holo",
+      "default": "rare-holo",
+      "glow": "hsl(175 100% 90%)"
+    },
+    "cosmos": {
+      "label": "Cosmos",
+      "default": "cosmos",
+      "glow": "hsl(228 80% 70%)"
+    },
+    "rainbow": {
+      "label": "Rainbow",
+      "default": "rainbow-rare",
+      "glow": "hsl(323 100% 80%)"
+    },
+    "foil": {
+      "label": "Foil",
+      "default": "v-full-art",
+      "glow": "hsl(192 97% 60%)"
+    },
+    "metallic": {
+      "label": "Metallic",
+      "default": "secret-rare",
+      "glow": "hsl(47 100% 78%)"
+    },
+    "reverse": {
+      "label": "Reverse",
+      "default": "reverse-holo",
+      "glow": "hsl(54 87% 63%)"
+    },
+    "glare": {
+      "label": "Glare",
+      "default": "basic",
+      "glow": "hsl(0 0% 100%)"
+    }
   },
   "variants": {
-    "rare-holo":    { "family": "holo",     "tier": "free", "label": "Holofoil Rare",         "source": "regular-holo.css",                "textures": [] },
-    "amazing-rare": { "family": "holo",     "tier": "all",  "label": "Amazing Rare",          "source": "amazing-rare.css",                "textures": [] },
-    "radiant":      { "family": "holo",     "tier": "all",  "label": "Radiant Holofoil",      "source": "radiant-holo.css",                "textures": ["trainerbg.png"] },
-    "tg-holo":      { "family": "holo",     "tier": "all",  "label": "Trainer Gallery Holo",  "source": "trainer-gallery-holo.css",        "textures": [] },
-    "cosmos":       { "family": "cosmos",   "tier": "free", "label": "Galaxy / Cosmos",       "source": "cosmos-holo.css",                 "textures": ["cosmos-bottom.webp", "cosmos-middle.webp", "cosmos-top.webp"] },
-    "rainbow-rare": { "family": "rainbow",  "tier": "free", "label": "Rainbow Rare",          "source": "rainbow-holo.css",                "textures": ["glitter.webp", "illusion-mask.png"] },
-    "v-alt":        { "family": "rainbow",  "tier": "all",  "label": "V Alternate Art",       "source": "rainbow-alt.css",                 "textures": ["glitter.webp"] },
-    "vmax-alt":     { "family": "rainbow",  "tier": "all",  "label": "VMax Alternate",        "source": "rainbow-alt.css",                 "textures": ["glitter.webp"] },
-    "v":            { "family": "foil",     "tier": "all",  "label": "V",                     "source": "v-regular.css",                   "textures": [] },
-    "v-full-art":   { "family": "foil",     "tier": "free", "label": "V Full Art",            "source": "v-full-art.css",                  "textures": ["illusion.png"] },
-    "vmax":         { "family": "foil",     "tier": "all",  "label": "VMax",                  "source": "v-max.css",                       "textures": ["vmaxbg.webp"] },
-    "vstar":        { "family": "foil",     "tier": "all",  "label": "VStar",                 "source": "v-star.css",                      "textures": ["ancient.png"] },
-    "trainer-full": { "family": "foil",     "tier": "all",  "label": "Trainer Full Art",      "source": "trainer-full-art.css",            "textures": ["trainerbg.png"] },
-    "tg-v":         { "family": "foil",     "tier": "all",  "label": "Trainer Gallery V",     "source": "trainer-gallery-v-regular.css",   "textures": [] },
-    "tg-vmax":      { "family": "foil",     "tier": "all",  "label": "Trainer Gallery VMax",  "source": "trainer-gallery-v-max.css",       "textures": [] },
-    "secret-rare":  { "family": "metallic", "tier": "free", "label": "Secret Rare (Gold)",    "source": "secret-rare.css",                 "textures": ["geometric.png"] },
-    "tg-secret":    { "family": "metallic", "tier": "all",  "label": "Trainer Gallery Secret","source": "trainer-gallery-secret-rare.css", "textures": ["geometric.png"] },
-    "shiny":        { "family": "metallic", "tier": "all",  "label": "Shiny Vault",           "source": "shiny-rare.css",                  "textures": ["illusion.png"] },
-    "shiny-v":      { "family": "metallic", "tier": "all",  "label": "Shiny Vault V",         "source": "shiny-v.css",                     "textures": ["illusion.png"] },
-    "shiny-vmax":   { "family": "metallic", "tier": "all",  "label": "Shiny Vault VMax",      "source": "shiny-vmax.css",                  "textures": ["illusion.png"] },
-    "pikachu":      { "family": "metallic", "tier": "all",  "label": "Special Illustration",  "source": "swsh-pikachu.css",                "textures": ["illusion-mask.png"] },
-    "reverse-holo": { "family": "reverse",  "tier": "free", "label": "Reverse Holo",          "source": "reverse-holo.css",                "textures": ["illusion.png"] },
-    "basic":        { "family": "glare",    "tier": "free", "label": "Glare only",            "source": "basic.css",                       "textures": [] }
+    "rare-holo": {
+      "family": "holo",
+      "tier": "free",
+      "label": "Holofoil Rare",
+      "source": "regular-holo.css",
+      "textures": []
+    },
+    "amazing-rare": {
+      "family": "holo",
+      "tier": "all",
+      "label": "Amazing Rare",
+      "source": "amazing-rare.css",
+      "textures": [
+        "glitter.webp"
+      ]
+    },
+    "radiant": {
+      "family": "holo",
+      "tier": "all",
+      "label": "Radiant Holofoil",
+      "source": "radiant-holo.css",
+      "textures": [
+        "trainerbg.png",
+        "glitter.webp"
+      ]
+    },
+    "tg-holo": {
+      "family": "holo",
+      "tier": "all",
+      "label": "Trainer Gallery Holo",
+      "source": "trainer-gallery-holo.css",
+      "textures": []
+    },
+    "cosmos": {
+      "family": "cosmos",
+      "tier": "free",
+      "label": "Galaxy / Cosmos",
+      "source": "cosmos-holo.css",
+      "textures": [
+        "cosmos-bottom.webp",
+        "cosmos-middle.webp",
+        "cosmos-top.webp"
+      ]
+    },
+    "rainbow-rare": {
+      "family": "rainbow",
+      "tier": "free",
+      "label": "Rainbow Rare",
+      "source": "rainbow-holo.css",
+      "textures": [
+        "glitter.webp",
+        "illusion-mask.png"
+      ]
+    },
+    "v-alt": {
+      "family": "rainbow",
+      "tier": "all",
+      "label": "V Alternate Art",
+      "source": "rainbow-alt.css",
+      "textures": [
+        "glitter.webp"
+      ]
+    },
+    "vmax-alt": {
+      "family": "rainbow",
+      "tier": "all",
+      "label": "VMax Alternate",
+      "source": "rainbow-alt.css",
+      "textures": [
+        "glitter.webp"
+      ]
+    },
+    "v": {
+      "family": "foil",
+      "tier": "all",
+      "label": "V",
+      "source": "v-regular.css",
+      "textures": []
+    },
+    "v-full-art": {
+      "family": "foil",
+      "tier": "free",
+      "label": "V Full Art",
+      "source": "v-full-art.css",
+      "textures": [
+        "illusion.png"
+      ]
+    },
+    "vmax": {
+      "family": "foil",
+      "tier": "all",
+      "label": "VMax",
+      "source": "v-max.css",
+      "textures": [
+        "vmaxbg.webp"
+      ]
+    },
+    "vstar": {
+      "family": "foil",
+      "tier": "all",
+      "label": "VStar",
+      "source": "v-star.css",
+      "textures": [
+        "ancient.png"
+      ]
+    },
+    "trainer-full": {
+      "family": "foil",
+      "tier": "all",
+      "label": "Trainer Full Art",
+      "source": "trainer-full-art.css",
+      "textures": [
+        "trainerbg.png"
+      ]
+    },
+    "tg-v": {
+      "family": "foil",
+      "tier": "all",
+      "label": "Trainer Gallery V",
+      "source": "trainer-gallery-v-regular.css",
+      "textures": [
+        "illusion.png"
+      ]
+    },
+    "tg-vmax": {
+      "family": "foil",
+      "tier": "all",
+      "label": "Trainer Gallery VMax",
+      "source": "trainer-gallery-v-max.css",
+      "textures": [
+        "glitter.webp"
+      ]
+    },
+    "secret-rare": {
+      "family": "metallic",
+      "tier": "free",
+      "label": "Secret Rare (Gold)",
+      "source": "secret-rare.css",
+      "textures": [
+        "geometric.png",
+        "glitter.webp"
+      ]
+    },
+    "tg-secret": {
+      "family": "metallic",
+      "tier": "all",
+      "label": "Trainer Gallery Secret",
+      "source": "trainer-gallery-secret-rare.css",
+      "textures": [
+        "geometric.png",
+        "glitter.webp"
+      ]
+    },
+    "shiny": {
+      "family": "metallic",
+      "tier": "all",
+      "label": "Shiny Vault",
+      "source": "shiny-rare.css",
+      "textures": [
+        "illusion.png"
+      ]
+    },
+    "shiny-v": {
+      "family": "metallic",
+      "tier": "all",
+      "label": "Shiny Vault V",
+      "source": "shiny-v.css",
+      "textures": [
+        "illusion.png"
+      ]
+    },
+    "shiny-vmax": {
+      "family": "metallic",
+      "tier": "all",
+      "label": "Shiny Vault VMax",
+      "source": "shiny-vmax.css",
+      "textures": [
+        "illusion.png",
+        "glitter.webp"
+      ]
+    },
+    "pikachu": {
+      "family": "metallic",
+      "tier": "all",
+      "label": "Special Illustration",
+      "source": "swsh-pikachu.css",
+      "textures": [
+        "illusion-mask.png",
+        "glitter.webp"
+      ]
+    },
+    "reverse-holo": {
+      "family": "reverse",
+      "tier": "free",
+      "label": "Reverse Holo",
+      "source": "reverse-holo.css",
+      "textures": [
+        "illusion.png"
+      ]
+    },
+    "basic": {
+      "family": "glare",
+      "tier": "free",
+      "label": "Glare only",
+      "source": "basic.css",
+      "textures": []
+    }
   }
 }
