@@ -104,7 +104,12 @@ await frontTest( true );
 	await page.fill( '#user_pass', process.env.WP_PASS || 'admin' );
 	await page.click( '#wp-submit' );
 	await page.waitForURL( /wp-admin/ );
-	await page.goto( BASE + '/wp-admin/post.php?post=5&action=edit', { waitUntil: 'networkidle' } );
+	// Resolve the fixture post by slug; 'networkidle' never settles in wp-admin (heartbeat), so
+	// wait for the DOM and let the canvas assertion below do the real waiting.
+	const posts = await ( await fetch( BASE + '/?rest_route=/wp/v2/posts&slug=holo-test' ) ).json();
+	const postId = posts?.[ 0 ]?.id;
+	check( '[editor] fixture post found', !! postId, String( postId ) );
+	await page.goto( BASE + '/wp-admin/post.php?post=' + postId + '&action=edit', { waitUntil: 'domcontentloaded' } );
 	// Dismiss welcome guide if any
 	await page.keyboard.press( 'Escape' ).catch( () => {} );
 	const frame = page.frameLocator( 'iframe[name="editor-canvas"]' );
