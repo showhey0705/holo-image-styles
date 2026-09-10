@@ -435,7 +435,7 @@ const HoloControls = ( { attributes, setAttributes, clientId } ) => {
 					<ToggleControl
 						label={ __( 'Auto showcase', 'holo-image-styles' ) }
 						help={ __(
-							'Plays a short 4-second sweep once when the image scrolls into view.',
+							'Plays a short 3-second sweep once when the image scrolls into view.',
 							'holo-image-styles'
 						) }
 						checked={ !! holo.showcase }

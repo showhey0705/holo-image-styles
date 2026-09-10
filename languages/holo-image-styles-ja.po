@@ -135,8 +135,8 @@ msgid "Auto showcase"
 msgstr "自動ショーケース"
 
 #: build/editor.js:1
-msgid "Plays a short 4-second sweep once when the image scrolls into view."
-msgstr "画像が表示されたときに 4 秒間のスイープを 1 回だけ再生します。"
+msgid "Plays a short 3-second sweep once when the image scrolls into view."
+msgstr "画像が表示されたときに 3 秒間のスイープを 1 回だけ再生します。"
 
 #: build/editor.js:1
 msgid "16 more effects are available in All Effects."

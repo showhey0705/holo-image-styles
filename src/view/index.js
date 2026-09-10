@@ -100,7 +100,7 @@ const unlift = ( el ) => {
 const unliftAll = () =>
 	document.querySelectorAll( '.holo__card.is-lifted' ).forEach( unlift );
 
-/* ---- showcase (optional, once, 4 s) ---- */
+/* ---- showcase (optional, once, 3 s) ---- */
 const stopShowcase = ( el ) => {
 	if ( el._holoShowInterval ) {
 		clearInterval( el._holoShowInterval );
@@ -125,15 +125,15 @@ const startShowcase = ( el ) => {
 	el.classList.add( 'is-interacting' );
 	let r = 0;
 	el._holoShowInterval = setInterval( () => {
-		r += 0.05;
-		// Orbit the pointer around the card; sin/cos like the original showcase.
+		r += 0.08;
+		// Orbit the pointer around the card (sin/cos like the original showcase), ~2 laps in 3 s.
 		el._holoPending = {
 			x: 50 + Math.sin( r ) * 45,
 			y: 50 + Math.cos( r ) * 45,
 		};
 		flush( el );
 	}, 20 );
-	el._holoShowEnd = setTimeout( () => rest( el ), 4000 );
+	el._holoShowEnd = setTimeout( () => rest( el ), 3000 );
 };
 
 /* ---- IntersectionObserver: arm/disarm ---- */

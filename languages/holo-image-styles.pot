@@ -172,7 +172,7 @@ msgid "Auto showcase"
 msgstr ""
 
 #: build/editor.js:1
-msgid "Plays a short 4-second sweep once when the image scrolls into view."
+msgid "Plays a short 3-second sweep once when the image scrolls into view."
 msgstr ""
 
 #: build/editor.js:1

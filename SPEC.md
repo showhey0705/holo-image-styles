@@ -333,7 +333,7 @@ store( 'holo-image-styles', {
       setVars( ref, REST );
       if ( 'IntersectionObserver' in window ) observe( ref ); else ref.classList.add( 'is-holo-armed' );
       if ( ref.dataset.holoShowcase === '1' && ! rm() && ! ref._holoShown ) {
-        ref._holoShown = true;   // 初回のみ。IO で armed になってから 1 秒後に 4 秒回す
+        ref._holoShown = true;   // 初回のみ。IO で armed になってから 1 秒後に 3 秒回す
         const start = () => { /* sin/cos で pending を書き、rAF で反映。200 tick × 20ms。終わったら leave() */ };
         setTimeout( start, 1000 );
       }
