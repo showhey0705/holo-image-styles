@@ -1,0 +1,304 @@
+/*
+ * Holo Image Styles — base.css (both editions, loaded before any family CSS)
+ *
+ * Ported from pokemon-cards-css by Simon Goellner (https://github.com/simeydotme/pokemon-cards-css, GPL-3.0).
+ * DOM produced by the server (SPEC §4):
+ *   figure.wp-block-image.is-style-holo-{family}
+ *     > div.holo__card[data-holo-variant] > (img | a > img) + span.holo__shine + span.holo__glare
+ *     > figcaption (outside the card, never rotates)
+ */
+
+/* 1. Typed custom properties so `transition` can animate them (SPEC §3.1). */
+@property --pointer-x { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+@property --pointer-y { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+@property --background-x { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+@property --background-y { syntax: '<percentage>'; inherits: true; initial-value: 50%; }
+@property --rotate-x { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --rotate-y { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@property --card-opacity { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --card-scale { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --pointer-from-center { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --pointer-from-top { syntax: '<number>'; inherits: true; initial-value: 0.5; }
+@property --pointer-from-left { syntax: '<number>'; inherits: true; initial-value: 0.5; }
+
+/* 2. Figure: perspective + palette. */
+.wp-block-image[class*="is-style-holo-"] {
+	perspective: 600px;
+	touch-action: pan-y;
+
+	--red: #f80e35;
+	--yellow: #eedf10;
+	--green: #21e985;
+	--blue: #0dbde9;
+	--violet: #c929f1;
+
+	--sunpillar-1: hsl(2, 100%, 73%);
+	--sunpillar-2: hsl(53, 100%, 69%);
+	--sunpillar-3: hsl(93, 100%, 69%);
+	--sunpillar-4: hsl(176, 100%, 76%);
+	--sunpillar-5: hsl(228, 100%, 74%);
+	--sunpillar-6: hsl(283, 100%, 73%);
+
+	--sunpillar-clr-1: var(--sunpillar-1);
+	--sunpillar-clr-2: var(--sunpillar-2);
+	--sunpillar-clr-3: var(--sunpillar-3);
+	--sunpillar-clr-4: var(--sunpillar-4);
+	--sunpillar-clr-5: var(--sunpillar-5);
+	--sunpillar-clr-6: var(--sunpillar-6);
+
+	--card-edge: hsl(47, 100%, 78%);
+	--spring: linear(0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.2%, 1.013 55.2%, 1.014 63.6%, 1.006 79.7%, 1);
+}
+
+.wp-block-image.aligncenter > .holo__card {
+	margin-inline: auto;
+}
+
+/* 3. The card: holds every variable, the 3D transform and the transitions. */
+.holo__card {
+	/* Defaults — work without JS (nothing glows, nothing tilts). */
+	--holo-intensity: 1;
+	--holo-tilt: 1;
+	--holo-glow: hsl(175, 100%, 90%);
+	--holo-radius: 0px;
+	--holo-clip: none;
+	--holo-clip-invert: none;
+	--pointer-x: 50%;
+	--pointer-y: 50%;
+	--background-x: 50%;
+	--background-y: 50%;
+	--rotate-x: 0deg;
+	--rotate-y: 0deg;
+	--card-opacity: 0;
+	--card-scale: 1;
+	--pointer-from-center: 0;
+	--pointer-from-top: 0.5;
+	--pointer-from-left: 0.5;
+
+	/* Texture slots, filled per variant by the server via the style attribute (SPEC §3.2/§4.4). */
+	--tex-1: none;
+	--tex-2: none;
+	--tex-3: none;
+	--foil: none;
+	--glitter: none;
+	--glittersize: 25%;
+	--space: 5%;
+	--angle: 133deg;
+	--imgsize: cover;
+	--cosmosbg: center center;
+	/* grain.webp replacement: cheap procedural noise-ish pattern. */
+	--grain: repeating-linear-gradient(45deg, hsla(0, 0%, 100%, 0.06) 0 1px, transparent 1px 3px), repeating-linear-gradient(-45deg, hsla(0, 0%, 0%, 0.08) 0 1px, transparent 1px 2px);
+
+	display: grid;
+	width: fit-content;
+	max-width: 100%;
+	position: relative;
+	border-radius: var(--holo-radius);
+	transform-style: preserve-3d;
+	isolation: isolate;
+	transform: translate3d(0, 0, 0.01px) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
+	transform-origin: center;
+	outline: 1px solid transparent; /* anti-alias trick from the original */
+
+	/* At rest: spring back over 1.2s. */
+	transition:
+		--pointer-x 1.2s var(--spring),
+		--pointer-y 1.2s var(--spring),
+		--background-x 1.2s var(--spring),
+		--background-y 1.2s var(--spring),
+		--rotate-x 1.2s var(--spring),
+		--rotate-y 1.2s var(--spring),
+		--card-opacity 1.2s var(--spring),
+		--pointer-from-center 1.2s var(--spring),
+		--pointer-from-top 1.2s var(--spring),
+		--pointer-from-left 1.2s var(--spring);
+}
+
+.holo__card.is-interacting {
+	z-index: 2;
+	transition:
+		--pointer-x 0.08s linear,
+		--pointer-y 0.08s linear,
+		--background-x 0.08s linear,
+		--background-y 0.08s linear,
+		--rotate-x 0.12s ease-out,
+		--rotate-y 0.12s ease-out,
+		--card-opacity 0.12s ease-out,
+		--pointer-from-center 0.08s linear,
+		--pointer-from-top 0.08s linear,
+		--pointer-from-left 0.08s linear;
+}
+
+/* Everything stacks on the same grid cell. */
+.holo__card > * {
+	grid-area: 1 / 1;
+	border-radius: inherit;
+	overflow: hidden;
+	min-width: 0;
+	transform-style: preserve-3d;
+	backface-visibility: hidden;
+}
+
+.holo__card > a {
+	display: block;
+	line-height: 0;
+}
+
+.holo__card > img,
+.holo__card > a > img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	transform: translate3d(0, 0, 0.01px);
+}
+
+.holo__card > .holo__shine,
+.holo__card > .holo__glare {
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+/* Core lightbox button lives inside the card and must stay clickable (SPEC §3.1). */
+.holo__card > .lightbox-trigger {
+	pointer-events: auto;
+	overflow: visible;
+	width: auto;
+	grid-area: 1 / 1;
+	z-index: 4;
+}
+
+/* 4. Shine & glare (values from the original base.css). */
+.holo__shine {
+	display: grid;
+	transform: translateZ(1px);
+	z-index: 3;
+	background: transparent;
+	background-size: cover;
+	background-position: center;
+	filter: brightness(0.85) contrast(2.75) saturate(0.65);
+	mix-blend-mode: color-dodge;
+	opacity: calc(var(--card-opacity) * var(--holo-intensity));
+	clip-path: var(--holo-clip);
+}
+
+.holo__shine::before,
+.holo__shine::after {
+	--sunpillar-clr-1: var(--sunpillar-5);
+	--sunpillar-clr-2: var(--sunpillar-6);
+	--sunpillar-clr-3: var(--sunpillar-1);
+	--sunpillar-clr-4: var(--sunpillar-2);
+	--sunpillar-clr-5: var(--sunpillar-3);
+	--sunpillar-clr-6: var(--sunpillar-4);
+
+	grid-area: 1 / 1;
+	width: 100%;
+	height: 100%;
+	transform: translateZ(1px);
+	border-radius: inherit;
+	background-size: cover;
+	background-position: center;
+}
+
+.holo__shine::after {
+	--sunpillar-clr-1: var(--sunpillar-6);
+	--sunpillar-clr-2: var(--sunpillar-1);
+	--sunpillar-clr-3: var(--sunpillar-2);
+	--sunpillar-clr-4: var(--sunpillar-3);
+	--sunpillar-clr-5: var(--sunpillar-4);
+	--sunpillar-clr-6: var(--sunpillar-5);
+
+	transform: translateZ(1.2px);
+}
+
+.holo__glare {
+	display: grid;
+	transform: translateZ(1.41px);
+	z-index: 4;
+	background-image: radial-gradient(
+		farthest-corner circle at var(--pointer-x) var(--pointer-y),
+		hsla(0, 0%, 100%, 0.8) 10%,
+		hsla(0, 0%, 100%, 0.65) 20%,
+		hsla(0, 0%, 0%, 0.5) 90%
+	);
+	opacity: calc(var(--card-opacity) * var(--holo-intensity));
+	mix-blend-mode: overlay;
+}
+
+.holo__glare::before,
+.holo__glare::after {
+	grid-area: 1 / 1;
+	width: 100%;
+	height: 100%;
+	border-radius: inherit;
+	background-size: cover;
+	background-position: center;
+}
+
+/* Glow while interacting (from the original .card.active box-shadow). */
+.holo__card.is-interacting {
+	box-shadow:
+		0 0 3px -1px white,
+		0 0 3px 1px var(--card-edge),
+		0 0 12px 2px var(--holo-glow),
+		0 10px 20px -5px rgba(0, 0, 0, 0.6),
+		0 0 40px -30px var(--holo-glow),
+		0 0 50px -20px var(--holo-glow);
+}
+
+/* 5. "Window" option: only the illustration area of a card-shaped image glows (SPEC §4.4). */
+.holo__card[data-holo-window="1"] {
+	--holo-clip: inset(9.85% 8% 52.85% 8%);
+	--holo-clip-invert: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0 47.15%, 91.5% 47.15%, 91.5% 9.85%, 8% 9.85%, 8% 47.15%, 0 50%);
+}
+
+/* 6. Arm gate: heavy layers are not painted until IntersectionObserver marks the card armed. */
+.holo__card:not(.is-holo-armed) .holo__shine,
+.holo__card:not(.is-holo-armed) .holo__shine::before,
+.holo__card:not(.is-holo-armed) .holo__shine::after,
+.holo__card:not(.is-holo-armed) .holo__glare,
+.holo__card:not(.is-holo-armed) .holo__glare::before,
+.holo__card:not(.is-holo-armed) .holo__glare::after {
+	background-image: none !important;
+	content: none !important;
+}
+
+.is-holo-armed .holo__shine,
+.is-holo-armed .holo__glare {
+	will-change: transform, opacity, background-position, filter;
+}
+
+/* 7. Reduced motion: no tilt, no transition, no showcase; a fixed sheen only (SPEC §3.1). */
+@media (prefers-reduced-motion: reduce) {
+	.holo__card {
+		--holo-tilt: 0;
+		transition: none !important;
+		--pointer-x: 28% !important;
+		--pointer-y: 18% !important;
+		--background-x: 44% !important;
+		--background-y: 36% !important;
+		--pointer-from-center: 0.7 !important;
+		--pointer-from-top: 0.18 !important;
+		--pointer-from-left: 0.28 !important;
+	}
+
+	.holo__shine,
+	.holo__glare {
+		opacity: calc(0.45 * var(--holo-intensity)) !important;
+	}
+
+	.holo__card.is-interacting {
+		box-shadow: none;
+	}
+}
+
+/* 8. Small screens: less tilt, drop the heaviest layer of the Holo family. */
+@media (max-width: 480px) {
+	.holo__card {
+		--holo-tilt: 0.6;
+	}
+
+	.is-style-holo-holo .holo__shine::before {
+		content: none;
+	}
+}
