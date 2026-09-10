@@ -64,6 +64,8 @@ jobs:
           npx wp-env run cli wp plugin activate holo-image-styles
           npx wp-env run cli wp plugin list --status=active --field=name
           npx wp-env run cli bash /var/www/html/wp-content/plugins/holo-image-styles-src/tests/e2e/setup.sh
+          # Turn the editor welcome guide off; it renders over the canvas and eats clicks.
+          npx wp-env run cli wp user meta update admin wp_persisted_preferences '{"core/edit-post":{"welcomeGuide":false},"core":{"welcomeGuide":false},"_modified":"2026-01-01T00:00:00.000Z"}' --format=json || true
       - run: npx playwright install --with-deps chromium
       - name: Smoke (free edition)
         run: WP_BASE=http://localhost:8888 WP_USER=admin WP_PASS=password node tests/e2e/smoke.mjs

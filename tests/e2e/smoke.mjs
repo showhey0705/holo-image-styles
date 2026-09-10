@@ -110,7 +110,15 @@ await frontTest( true );
 	const postId = posts?.[ 0 ]?.id;
 	check( '[editor] fixture post found', !! postId, String( postId ) );
 	await page.goto( BASE + '/wp-admin/post.php?post=' + postId + '&action=edit', { waitUntil: 'domcontentloaded' } );
-	// Dismiss welcome guide if any
+	// Dismiss the "Welcome to the editor" modal — on a fresh profile (CI) it renders after the
+	// editor mounts and swallows every click on the canvas.
+	const overlay = page.locator( '.components-modal__screen-overlay' );
+	await overlay.first().waitFor( { state: 'visible', timeout: 8000 } ).catch( () => {} );
+	if ( await overlay.count() ) {
+		await page.locator( '.components-modal__header button' ).first().click().catch( () => {} );
+		await page.keyboard.press( 'Escape' ).catch( () => {} );
+		await overlay.first().waitFor( { state: 'detached', timeout: 10000 } ).catch( () => {} );
+	}
 	await page.keyboard.press( 'Escape' ).catch( () => {} );
 	const frame = page.frameLocator( 'iframe[name="editor-canvas"]' );
 	await frame.locator( 'figure.is-style-holo-cosmos' ).first().waitFor( { timeout: 30000 } );
