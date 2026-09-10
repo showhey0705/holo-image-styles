@@ -2,7 +2,7 @@
  * Holo Image Styles — editor integration (SPEC §6, v1.2 picker UI).
  *
  * 1. Adds the `holo` attribute to core/image (same defaults as the server).
- * 2. "Holo effect" controls: every effect of this edition as a static thumbnail, grouped by family.
+ * 2. "Holo effect" controls: every effect of this edition as a static thumbnail in one flat grid (ledger order).
  *    Choosing one sets the block style (is-style-holo-{family}) AND holo.variant in one click.
  *    Shown in the inspector for every Image block.
  * 3. Hovering a thumbnail previews that effect on the canvas (CSS-only preview, no cost).
@@ -210,65 +210,43 @@ const VariantPicker = ( { value, onChange, clientId, columns = 3 } ) => {
 			onMouseLeave={ clear }
 			onKeyDown={ onKeyDown }
 		>
-			{ FAMILY_ORDER.map( ( family ) => {
-				const keys = ALL_VARIANTS.filter(
-					( k ) => DATA.variants[ k ].family === family
-				);
-				if ( ! keys.length ) {
-					return null;
-				}
+			{ ALL_VARIANTS.map( ( key ) => {
+				const checked = key === value;
+				const focusable =
+					checked || ( ! value && key === ALL_VARIANTS[ 0 ] );
 				return (
-					<div className="holo-picker__family" key={ family }>
-						<div className="holo-picker__family-head">
-							<span>{ DATA.families[ family ].label }</span>
-							<span className="holo-picker__count">
-								{ keys.length }
-							</span>
-						</div>
-						<div className="holo-picker__grid">
-							{ keys.map( ( key ) => {
-								const checked = key === value;
-								const focusable =
-									checked ||
-									( ! value && key === ALL_VARIANTS[ 0 ] );
-								return (
-									<button
-										type="button"
-										key={ key }
-										data-variant={ key }
-										role="radio"
-										aria-checked={ checked }
-										tabIndex={ focusable ? 0 : -1 }
-										className={
-											'holo-picker__item' +
-											( checked ? ' is-checked' : '' )
-										}
-										onClick={ () => onChange( key ) }
-										onMouseEnter={ () =>
-											setPreview( clientId, key )
-										}
-										onFocus={ () =>
-											setPreview( clientId, key )
-										}
-										onBlur={ clear }
-									>
-										<img
-											src={ `${ DATA.thumbsUrl }${ key }.webp` }
-											alt=""
-											width="160"
-											height="224"
-											loading="lazy"
-											decoding="async"
-											draggable="false"
-										/>
-										<span className="holo-picker__label">
-											{ DATA.variants[ key ].label }
-										</span>
-									</button>
-								);
-							} ) }
-						</div>
-					</div>
+					<button
+						type="button"
+						key={ key }
+						data-variant={ key }
+						role="radio"
+						aria-checked={ checked }
+						tabIndex={ focusable ? 0 : -1 }
+						className={
+							'holo-picker__item' +
+							( checked ? ' is-checked' : '' )
+						}
+						title={
+							DATA.families[ DATA.variants[ key ].family ].label
+						}
+						onClick={ () => onChange( key ) }
+						onMouseEnter={ () => setPreview( clientId, key ) }
+						onFocus={ () => setPreview( clientId, key ) }
+						onBlur={ clear }
+					>
+						<img
+							src={ `${ DATA.thumbsUrl }${ key }.webp` }
+							alt=""
+							width="160"
+							height="224"
+							loading="lazy"
+							decoding="async"
+							draggable="false"
+						/>
+						<span className="holo-picker__label">
+							{ DATA.variants[ key ].label }
+						</span>
+					</button>
 				);
 			} ) }
 		</div>
@@ -445,16 +423,7 @@ const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
 						onChange={ ( v ) => update( { showcase: !! v } ) }
 						__nextHasNoMarginBottom
 					/>
-					<ToggleControl
-						label={ __( 'Card window', 'holo-image-styles' ) }
-						help={ __(
-							'Limit the shine to the illustration window of a card-shaped image.',
-							'holo-image-styles'
-						) }
-						checked={ !! holo.window }
-						onChange={ ( v ) => update( { window: !! v } ) }
-						__nextHasNoMarginBottom
-					/>
+					{ /* 'Card window' (holo.window) is kept as an attribute for trading-card images but no longer exposed here. */ }
 				</div>
 			) }
 			{ DATA.edition === 'free' && DATA.upsellUrl && (
@@ -615,9 +584,7 @@ const HoloPanel = ( props ) => {
 						shortcut="⇧⌥⌘H"
 						onClick={ openPanel }
 						isPressed={ !! family }
-					>
-						{ __( 'Holo effect', 'holo-image-styles' ) }
-					</ToolbarButton>
+					/>
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>

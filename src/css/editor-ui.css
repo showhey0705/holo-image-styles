@@ -3,35 +3,10 @@
  */
 
 .holo-picker {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	margin: 0 0 16px;
-}
-
-.holo-picker__family-head {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: #1e1e1e;
-	margin-bottom: 6px;
-}
-
-.holo-picker__count {
-	font-weight: 400;
-	color: #757575;
-	letter-spacing: 0;
-	text-transform: none;
-}
-
-.holo-picker__grid {
 	display: grid;
 	grid-template-columns: repeat(var(--holo-picker-columns, 3), minmax(0, 1fr));
 	gap: 8px;
+	margin: 0 0 16px;
 }
 
 .holo-picker__item {

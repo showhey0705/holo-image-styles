@@ -141,7 +141,7 @@ await frontTest( true );
 	check( '[editor] free help line', await page.locator( '.interface-complementary-area .holo-image-styles__help' ).count() === 1 );
 	const radios = picker.getByRole( 'radio' );
 	const labels = await radios.allTextContents();
-	check( '[editor] free edition shows all 7 effects grouped', labels.length === 7 && ( await picker.locator( '.holo-picker__family' ).count() ) === 7, labels.join( ',' ) );
+	check( '[editor] free edition shows all 7 effects in one grid', labels.length === 7, labels.join( ',' ) );
 	check( '[editor] cosmos is checked', ( await picker.locator( '[data-variant="cosmos"]' ).getAttribute( 'aria-checked' ) ) === 'true' );
 	const thumbOk = await radios.first().locator( 'img' ).evaluate( ( img ) => img.complete && img.naturalWidth > 0 );
 	check( '[editor] thumbnail image loads', thumbOk === true );
