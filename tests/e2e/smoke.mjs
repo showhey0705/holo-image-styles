@@ -129,18 +129,35 @@ await frontTest( true );
 	}
 	await page.getByRole( 'tab', { name: 'Block' } ).click().catch( () => {} );
 	await page.getByRole( 'tab', { name: 'Settings' } ).click().catch( () => {} );
-	const panel = page.getByRole( 'button', { name: 'Holo effect' } );
+	const panel = page.locator( '.interface-complementary-area' ).getByRole( 'button', { name: 'Holo effect' } );
 	await panel.waitFor( { timeout: 10000 } ).catch( () => {} );
 	await page.screenshot( { path: './tests/e2e/artifacts/editor-panel.png' } );
 	if ( await panel.count() === 0 ) { console.log( 'sidebar html:', ( await page.locator( '.interface-complementary-area' ).innerText().catch( () => 'no sidebar' ) ).slice( 0, 600 ) ); }
 	check( '[editor] Holo effect panel visible', await panel.count() === 1 );
 	const isOpen = await panel.getAttribute( 'aria-expanded' );
 	if ( isOpen !== 'true' ) await panel.click();
-	check( '[editor] effect select present', await page.getByLabel( 'Effect' ).count() === 1 );
-	check( '[editor] free help line', await page.locator( '.holo-image-styles__help' ).count() === 1 );
-	// Change intensity via select of variant (free: only cosmos)
-	const opts = await page.getByLabel( 'Effect' ).locator( 'option' ).allTextContents();
-	check( '[editor] cosmos family has 1 option in free', opts.length === 1 && opts[ 0 ] === 'Galaxy / Cosmos', opts.join( ',' ) );
+	const picker = page.locator( '.interface-complementary-area .holo-picker' );
+	check( '[editor] thumbnail picker present', await picker.count() === 1 );
+	check( '[editor] free help line', await page.locator( '.interface-complementary-area .holo-image-styles__help' ).count() === 1 );
+	const radios = picker.getByRole( 'radio' );
+	const labels = await radios.allTextContents();
+	check( '[editor] cosmos family has 1 thumbnail in free', labels.length === 1 && labels[ 0 ] === 'Galaxy / Cosmos', labels.join( ',' ) );
+	const thumbOk = await radios.first().locator( 'img' ).evaluate( ( img ) => img.complete && img.naturalWidth > 0 );
+	check( '[editor] thumbnail image loads', thumbOk === true );
+	check( '[editor] strength presets', await page.locator( '.interface-complementary-area' ).getByRole( 'radio', { name: 'Normal' } ).count() === 1 );
+
+	// Toolbar button → popover with the same picker; hover a thumbnail → canvas preview attribute.
+	await page.locator( '.block-editor-block-toolbar' ).getByRole( 'button', { name: 'Holo effect' } ).click();
+	const popover = page.locator( '.holo-popover' );
+	await popover.waitFor( { timeout: 5000 } ).catch( () => {} );
+	check( '[editor] toolbar popover opens with picker', await popover.locator( '.holo-picker' ).count() === 1 );
+	await popover.getByRole( 'radio' ).first().hover();
+	await page.waitForTimeout( 150 );
+	check( '[editor] hover sets canvas preview', ( await wrap.getAttribute( 'data-holo-preview' ) ) === '1' );
+	await page.mouse.move( 10, 10 );
+	await page.waitForTimeout( 150 );
+	check( '[editor] leaving clears preview', ( await wrap.getAttribute( 'data-holo-preview' ) ) === null );
+	await page.keyboard.press( 'Escape' );
 
 	// Block validity: no "This block contains unexpected or invalid content"
 	const invalid = await frame.locator( '.block-editor-warning' ).count();

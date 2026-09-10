@@ -74,7 +74,7 @@ return ${ toPhp( { edition, version, families: ledger.families, variants: ledger
 
 // 3. CSS
 ensureDir( path.join( OUT, 'css', 'families' ) );
-for ( const file of [ 'base.css', 'editor.css' ] ) {
+for ( const file of [ 'base.css', 'editor.css', 'editor-ui.css' ] ) {
 	const css = fs.readFileSync( path.join( SRC, 'css', file ), 'utf8' );
 	fs.writeFileSync( path.join( OUT, 'css', file ), minifyCss( css ) + '\n' );
 }
@@ -98,6 +98,15 @@ for ( const v of Object.values( ledger.variants ) ) {
 ensureDir( path.join( OUT, 'textures' ) );
 for ( const t of textures ) {
 	fs.copyFileSync( path.join( SRC, 'textures', t ), path.join( OUT, 'textures', t ) );
+}
+
+// 4b. Editor thumbnails (whitelist, same rule as textures).
+ensureDir( path.join( OUT, 'thumbs' ) );
+for ( const key of Object.keys( ledger.variants ) ) {
+	const thumb = path.join( SRC, 'thumbs', `${ key }.webp` );
+	if ( fs.existsSync( thumb ) ) {
+		fs.copyFileSync( thumb, path.join( OUT, 'thumbs', `${ key }.webp` ) );
+	}
 }
 
 // 5. Main plugin file.
@@ -187,6 +196,11 @@ if ( edition === 'free' ) {
 			}
 		}
 	}
+	for ( const [ name ] of allOnly ) {
+		if ( fs.existsSync( path.join( OUT, 'thumbs', `${ name }.webp` ) ) ) {
+			problems.push( `free edition ships all-only thumbnail "${ name }".` );
+		}
+	}
 	const variantsPhp = fs.readFileSync( path.join( OUT, 'inc', 'variants.php' ), 'utf8' );
 	for ( const [ name ] of allOnly ) {
 		if ( new RegExp( `'${ name }' =>` ).test( variantsPhp ) ) {
@@ -199,14 +213,17 @@ if ( edition === 'free' ) {
 } else if ( fs.existsSync( path.join( OUT, 'uninstall.php' ) ) ) {
 	problems.push( 'all edition must not ship uninstall.php (option is shared with the free edition).' );
 }
-for ( const v of Object.values( ledger.variants ) ) {
+for ( const [ key, v ] of Object.entries( ledger.variants ) ) {
+	if ( ! fs.existsSync( path.join( OUT, 'thumbs', `${ key }.webp` ) ) ) {
+		problems.push( `thumbnail "${ key }.webp" missing from output (run "npm run thumbs").` );
+	}
 	for ( const t of v.textures ) {
 		if ( ! fs.existsSync( path.join( OUT, 'textures', t ) ) ) {
 			problems.push( `texture "${ t }" missing from output.` );
 		}
 	}
 }
-for ( const f of [ 'build/view.js', 'build/editor.js', 'inc/class-plugin.php', 'inc/class-render.php', 'inc/class-variants.php', 'inc/class-editor.php', 'inc/class-edition.php', 'css/base.css', 'css/editor.css' ] ) {
+for ( const f of [ 'build/view.js', 'build/editor.js', 'inc/class-plugin.php', 'inc/class-render.php', 'inc/class-variants.php', 'inc/class-editor.php', 'inc/class-edition.php', 'css/base.css', 'css/editor.css', 'css/editor-ui.css' ] ) {
 	if ( ! fs.existsSync( path.join( OUT, f ) ) ) {
 		problems.push( `required file missing: ${ f } (run "npm run build" first?)` );
 	}

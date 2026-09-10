@@ -64,6 +64,7 @@ final class Editor {
 			'families'  => Variants::all_families(),
 			'variants'  => $variants,
 			'defaults'  => Render::DEFAULTS,
+			'thumbsUrl' => Plugin::url( 'thumbs/' ),
 			'upsellUrl' => 'free' === Variants::edition() ? 'https://pro.jadeclinic.jp/holo-image-styles/' : '',
 		];
 	}
@@ -85,6 +86,7 @@ final class Editor {
 			true
 		);
 		wp_set_script_translations( 'holo-image-styles-editor', 'holo-image-styles', Plugin::dir( 'languages' ) );
+		wp_enqueue_style( 'holo-image-styles-editor-ui' );
 		wp_add_inline_script(
 			'holo-image-styles-editor',
 			'window.holoImageStyles = ' . wp_json_encode( self::editor_data() ) . ';',

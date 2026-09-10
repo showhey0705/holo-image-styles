@@ -17,7 +17,7 @@ msgstr ""
 #. Plugin Name of the plugin
 #: holo-image-styles-all.php
 msgid "Holo Image Styles (All Effects)"
-msgstr ""
+msgstr "Holo Image Styles (All Effects)"
 
 #. Plugin URI of the plugin
 #: holo-image-styles-all.php
@@ -27,7 +27,7 @@ msgstr ""
 #. Description of the plugin
 #: holo-image-styles-all.php
 msgid "Holographic card effects for the Image block. Inspired by pokemon-cards-css by Simon Goellner (GPL-3.0)."
-msgstr ""
+msgstr "画像ブロックにホログラムカードのエフェクトを追加します。Simon Goellner の pokemon-cards-css（GPL-3.0）をもとにしています。"
 
 #. Author of the plugin
 #: holo-image-styles-all.php
@@ -41,126 +41,126 @@ msgstr ""
 
 #: inc/class-edition.php:86
 msgid "Holo Image Styles (All Effects) is active."
-msgstr ""
+msgstr "Holo Image Styles (All Effects) が有効になりました。"
 
 #: inc/class-edition.php:87
 msgid "The free edition has been deactivated; the All Effects edition includes everything it had."
-msgstr ""
+msgstr "無料版は停止しました。All Effects 版には無料版のエフェクトがすべて含まれています。"
 
 #: inc/class-edition.php:96
 msgid "Delete the free edition"
-msgstr ""
+msgstr "無料版を削除"
 
 #: inc/class-edition.php:99
 msgid "Please delete \"Holo Image Styles\" (free edition) from the Plugins list."
-msgstr ""
+msgstr "プラグイン一覧から「Holo Image Styles」（無料版）を削除してください。"
 
 #: inc/class-edition.php:104
 msgid "Not now"
-msgstr ""
+msgstr "今回は削除しない"
 
 #: inc/class-edition.php:116
 msgid "You are not allowed to delete plugins."
-msgstr ""
+msgstr "プラグインを削除する権限がありません。"
 
 #: inc/class-edition.php:143
 msgid "You are not allowed to do that."
-msgstr ""
+msgstr "この操作を行う権限がありません。"
 
 #: inc/class-edition.php:251
 msgid "All 23 holographic effects for the Image block."
-msgstr ""
+msgstr "画像ブロック用のホログラムエフェクト全 23 種。"
 
 #: inc/class-edition.php:255
 msgid "View the changelog"
-msgstr ""
+msgstr "変更履歴を見る"
 
 #: build/editor.js:1
 msgid "Effect"
-msgstr ""
+msgstr "エフェクト"
 
 #: build/editor.js:1
 msgid "Strength"
-msgstr ""
+msgstr "強さ"
 
 #: build/editor.js:1
 msgid "Subtle"
-msgstr ""
+msgstr "控えめ"
 
 #: build/editor.js:1
 msgid "Normal"
-msgstr ""
+msgstr "標準"
 
 #: build/editor.js:1
 msgid "Bold"
-msgstr ""
+msgstr "派手"
 
 #: build/editor.js:1
 msgid "Custom"
-msgstr ""
+msgstr "カスタム"
 
 #: build/editor.js:1
 msgid "Hide details"
-msgstr ""
+msgstr "詳細を閉じる"
 
 #: build/editor.js:1
 msgid "Fine-tune…"
-msgstr ""
+msgstr "細かく調整…"
 
 #: build/editor.js:1
 msgid "Intensity"
-msgstr ""
+msgstr "強度"
 
 #: build/editor.js:1
 msgid "Tilt"
-msgstr ""
+msgstr "傾き"
 
 #: build/editor.js:1
 msgid "Touch devices"
-msgstr ""
+msgstr "タッチ端末"
 
 #: build/editor.js:1
 msgid "Tap"
-msgstr ""
+msgstr "タップ"
 
 #: build/editor.js:1
 msgid "Glare"
-msgstr ""
+msgstr "光沢のみ"
 
 #: build/editor.js:1
 msgid "Off"
-msgstr ""
+msgstr "オフ"
 
 #: build/editor.js:1
 msgid "Auto showcase"
-msgstr ""
+msgstr "自動ショーケース"
 
 #: build/editor.js:1
 msgid "Plays a short 4-second sweep once when the image scrolls into view."
-msgstr ""
+msgstr "画像が表示されたときに 4 秒間のスイープを 1 回だけ再生します。"
 
 #: build/editor.js:1
 msgid "Card window"
-msgstr ""
+msgstr "カードの窓"
 
 #: build/editor.js:1
 msgid "Limit the shine to the illustration window of a card-shaped image."
-msgstr ""
+msgstr "カード型の画像で、イラスト部分だけを光らせます。"
 
 #: build/editor.js:1
 msgid "16 more effects are available in All Effects."
-msgstr ""
+msgstr "All Effects 版では、さらに 16 種のエフェクトが使えます。"
 
 #: build/editor.js:1
 msgid "Learn more"
-msgstr ""
+msgstr "詳しく見る"
 
 #. translators: %s: effect name.
 #: build/editor.js:2
 #, js-format
 msgid "\"%s\" is not included in this edition; the default effect of this family is used instead."
-msgstr ""
+msgstr "「%s」はこのエディションに含まれないため、このファミリーの既定のエフェクトを使います。"
 
 #: build/editor.js:2
 msgid "Holo effect"
-msgstr ""
+msgstr "ホロ効果"

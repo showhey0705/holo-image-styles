@@ -137,9 +137,15 @@
 	content: none;
 }
 
-/* Inspector help line (free edition). */
-.holo-image-styles__help {
-	margin: 8px 0 0;
-	font-size: 12px;
-	color: #757575;
+/* Hover preview from the picker: show the effect a bit stronger so the change is obvious. */
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"][data-holo-preview="1"] {
+	--card-opacity: 1.15;
 }
+
+/* Per-family fixed pointer positions for the Styles panel previews (picked for the most flattering look). */
+.editor-styles-wrapper .wp-block-image.is-style-holo-holo { --pointer-x: 30%; --pointer-y: 20%; --background-x: 42%; --background-y: 38%; }
+.editor-styles-wrapper .wp-block-image.is-style-holo-cosmos { --pointer-from-left: 0.35; --pointer-from-top: 0.25; }
+.editor-styles-wrapper .wp-block-image.is-style-holo-rainbow { --pointer-from-left: 0.6; --pointer-from-top: 0.35; --pointer-x: 60%; --pointer-y: 35%; }
+.editor-styles-wrapper .wp-block-image.is-style-holo-foil { --background-x: 40%; --background-y: 30%; }
+.editor-styles-wrapper .wp-block-image.is-style-holo-metallic { --pointer-x: 35%; --pointer-y: 25%; }
+.editor-styles-wrapper .wp-block-image.is-style-holo-reverse { --pointer-from-left: 0.3; --pointer-from-top: 0.2; }

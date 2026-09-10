@@ -11,6 +11,7 @@
     "build:all": "node bin/build.mjs all",
     "build:dist": "npm run build && node bin/build.mjs free && node bin/build.mjs all",
     "check-variants": "node bin/check-variants.mjs",
+    "thumbs": "node bin/thumbs.mjs",
     "lint:js": "wp-scripts lint-js src",
     "lint:css": "wp-scripts lint-style 'src/css/**/*.css'",
     "test:e2e": "wp-scripts test-playwright",

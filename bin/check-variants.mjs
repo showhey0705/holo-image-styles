@@ -45,6 +45,9 @@ for ( const [ key, def ] of Object.entries( variants ) ) {
 				fail( `variant "${ key }": texture "${ tex }" is missing from src/textures/.` );
 			}
 		}
+		if ( ! fs.existsSync( path.join( SRC, 'thumbs', `${ key }.webp` ) ) ) {
+			fail( `variant "${ key }": src/thumbs/${ key }.webp is missing (run "npm run thumbs").` );
+		}
 		if ( def.textures.length > 3 ) {
 			fail( `variant "${ key }": at most 3 textures are supported (--tex-1..3).` );
 		}
