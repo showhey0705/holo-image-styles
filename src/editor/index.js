@@ -6,7 +6,7 @@
  *    Choosing one sets the block style (is-style-holo-{family}) AND holo.variant in one click.
  *    Shown in the inspector for every Image block.
  * 3. Hovering a thumbnail previews that effect on the canvas (CSS-only preview, no cost).
- * 4. The toolbar button and ⇧⌥⌘H open the block sidebar (Settings tab) on that panel — the standard place
+ * 4. The toolbar button and ⌘H (alias ⇧⌥⌘H) open the block sidebar (Settings tab) on that panel — the standard place
  *    for block options; ← → pick, ⇧⌘⌫ removes the effect.
  * 5. Passes data-holo-variant + CSS variables to the block wrapper so editor.css can draw the preview,
  *    and copies the image's border-radius onto the wrapper so the preview corners match.
@@ -476,7 +476,11 @@ const useRegisterShortcut = () => {
 				'Open the Holo effect picker for the selected image.',
 				'holo-image-styles'
 			),
-			keyCombination: { modifier: 'secondary', character: 'h' }, // ⇧⌥⌘H — ⇧⌘H is core's "toggle block visibility" since WP 7.x, ⌥⌘H is macOS "Hide Others".,
+			// ⌘H, the same key as Rough Notation. macOS reserves ⌘H for "Hide"; Chrome hands the keydown to the
+			// page first and preventDefault() keeps it. ⇧⌥⌘H stays as an alias for setups where the OS wins.
+			// (⇧⌘H is core's "toggle block visibility" since WP 7.x, ⌥⌘H is macOS "Hide Others".)
+			keyCombination: { modifier: 'primary', character: 'h' },
+			aliases: [ { modifier: 'secondary', character: 'h' } ],
 		} );
 	}, [ registerShortcut ] );
 };
@@ -600,7 +604,7 @@ const HoloPanel = ( props ) => {
 				<ToolbarButton
 					icon={ <HoloIcon /> }
 					label={ __( 'Holo effect', 'holo-image-styles' ) }
-					shortcut="⇧⌥⌘H"
+					shortcut="⌘H"
 					onClick={ openPanel }
 					isPressed={ !! family }
 				/>

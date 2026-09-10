@@ -184,9 +184,9 @@ await frontTest( true );
 	await page.locator( 'button[aria-label="Settings"]' ).first().click().catch( () => {} );
 	await page.waitForTimeout( 300 );
 	await blk.click();
-	await page.keyboard.press( process.platform === 'darwin' ? 'Shift+Alt+Meta+h' : 'Shift+Alt+Control+h' );
+	await page.keyboard.press( process.platform === 'darwin' ? 'Meta+h' : 'Control+h' );
 	await page.waitForTimeout( 900 );
-	check( '[editor] ⇧⌥⌘H opens the sidebar panel', await page.locator( '.interface-complementary-area .holo-picker' ).isVisible().catch( () => false ) );
+	check( '[editor] ⌘H opens the sidebar panel', await page.locator( '.interface-complementary-area .holo-picker' ).isVisible().catch( () => false ) );
 
 	// Rounded corners: the wrapper copies the image radius.
 	const rounded = frame.locator( 'figure.is-style-rounded' ).first();

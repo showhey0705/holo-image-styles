@@ -701,7 +701,7 @@ JADE Pro 購読者は購入ボタンが出ず、最初からダウンロード�
 |---|---|
 | ホロ効果パネル | 全バリアントをファミリー見出し付きの静止画サムネで一覧表示。1 枚選ぶと `className`（`is-style-holo-{family}`）と `holo.variant` を同時に設定。すべての画像ブロックに表示（ホロ未適用でも選べる）。「効果を外す」で解除 |
 | ツールバー | 「ホロ効果」ボタン → ブロックサイドバー（設定タブ）の「ホロ効果」パネルを開いて選択中サムネにフォーカス（WordPress 標準の場所。ポップオーバーは廃止）。← → で選択、⇧⌘⌫ で外す |
-| ショートカット | **⇧⌥⌘H**（`secondary` + h）。⇧⌘H は WP 7.x コアの「ブロックの表示/非表示」、⌥⌘H は macOS の「ほかを隠す」と衝突するため |
+| ショートカット | **⌘H**（`primary` + h、Rough Notation と同じ）。keydown を preventDefault して macOS の「隠す」より先に受け取る。エイリアスとして ⇧⌥⌘H も登録。⇧⌘H は WP 7.x コアの「ブロックの表示/非表示」、⌥⌘H は macOS の「ほかを隠す」と衝突するため使わない |
 | 角丸 | フロント/エディタとも JS が画像（無ければ figure）の computed `border-radius` を読み `--holo-radius` に写す。テーマ CSS の角丸でも黒い角が出ない |
 | 影 | 属性 `holo.glow`: `soft`（既定・中立な落ち影）/ `none` / `color`（原作のファミリー色グロー）。`data-holo-glow` で出力 |
 | サムネ | `bin/thumbs.mjs` が実 CSS を Playwright で描画して生成。cosmos は bottom を不透明 PNG 由来（原作どおり）にし、middle/top は alpha を保持した WebP に修正 |
