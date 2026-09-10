@@ -4,10 +4,10 @@
  * 1. Adds the `holo` attribute to core/image (same defaults as the server).
  * 2. "Holo effect" controls: every effect of this edition as a static thumbnail, grouped by family.
  *    Choosing one sets the block style (is-style-holo-{family}) AND holo.variant in one click.
- *    Shown in the inspector and in a toolbar popover for every Image block.
+ *    Shown in the inspector for every Image block.
  * 3. Hovering a thumbnail previews that effect on the canvas (CSS-only preview, no cost).
- * 4. ⇧⌥⌘H opens/closes the popover for the selected Image block; ← → pick, Enter commits, Esc reverts,
- *    ⇧⌘⌫ removes the effect.
+ * 4. The toolbar button and ⇧⌥⌘H open the block sidebar (Settings tab) on that panel — the standard place
+ *    for block options; ← → pick, ⇧⌘⌫ removes the effect.
  * 5. Passes data-holo-variant + CSS variables to the block wrapper so editor.css can draw the preview,
  *    and copies the image's border-radius onto the wrapper so the preview corners match.
  */
@@ -21,7 +21,6 @@ import {
 	Notice,
 	ExternalLink,
 	Button,
-	Dropdown,
 	ToolbarGroup,
 	ToolbarButton,
 	SVG,
@@ -29,7 +28,7 @@ import {
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
-import { useEffect, useState, useCallback, useRef } from '@wordpress/element';
+import { useEffect, useState, useCallback } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import {
 	store as keyboardShortcutsStore,
@@ -494,20 +493,53 @@ const useRegisterShortcut = () => {
 	}, [ registerShortcut ] );
 };
 
+/**
+ * Open the block sidebar on the Settings tab, expand the "Holo effect" panel and focus the picker.
+ * This is the WordPress-standard place for block options; the toolbar button and the shortcut both lead here.
+ *
+ * @param {Function} enableComplementaryArea Dispatcher from core/interface.
+ * @param {Function} setPanelOpen            State setter for the PanelBody.
+ */
+const revealPanel = ( enableComplementaryArea, setPanelOpen ) => {
+	enableComplementaryArea( 'core', 'edit-post/block' );
+	setPanelOpen( true );
+	// The inspector tabs (Content / Settings / Styles) have no public API; switch via the DOM after render.
+	let tries = 0;
+	const tick = () => {
+		const tab = document.querySelector(
+			'.block-editor-block-inspector__tabs [role="tab"][id$="-settings"]'
+		);
+		if ( tab && tab.getAttribute( 'aria-selected' ) !== 'true' ) {
+			tab.click();
+		}
+		const picker = document.querySelector(
+			'.interface-complementary-area .holo-picker'
+		);
+		if ( picker ) {
+			picker.scrollIntoView( { block: 'nearest' } );
+			const target =
+				picker.querySelector( '[role="radio"][aria-checked="true"]' ) ||
+				picker.querySelector( '[role="radio"]' );
+			target?.focus( { preventScroll: true } );
+			return;
+		}
+		if ( tries++ < 10 ) {
+			setTimeout( tick, 60 );
+		}
+	};
+	setTimeout( tick, 30 );
+};
+
 const HoloPanel = ( props ) => {
 	const { attributes, setAttributes, isSelected } = props;
 	const family = familyFromClass( attributes.className );
 	const holo = { ...DEFAULTS, ...( attributes.holo || {} ) };
 	const [ fallbackNotice, setFallbackNotice ] = useState( '' );
-	const [ isOpen, setOpen ] = useState( false );
-	const snapshot = useRef( null );
+	const [ panelOpen, setPanelOpen ] = useState( !! family );
+	const { enableComplementaryArea } = useDispatch( 'core/interface' );
 	useRegisterShortcut();
 
-	const openPicker = () => {
-		snapshot.current = {
-			className: attributes.className,
-			holo: attributes.holo,
-		};
+	const openPanel = () => {
 		if ( ! family && FAMILY_ORDER.length ) {
 			// Start from the first family's default so the user sees something right away.
 			setAttributes( {
@@ -518,14 +550,7 @@ const HoloPanel = ( props ) => {
 				holo: { ...holo, variant: '' },
 			} );
 		}
-		setOpen( true );
-	};
-	const closePicker = ( revert ) => {
-		if ( revert && snapshot.current ) {
-			setAttributes( snapshot.current );
-		}
-		snapshot.current = null;
-		setOpen( false );
+		revealPanel( enableComplementaryArea, setPanelOpen );
 	};
 
 	useShortcut( SHORTCUT_NAME, ( e ) => {
@@ -533,11 +558,7 @@ const HoloPanel = ( props ) => {
 			return;
 		}
 		e.preventDefault();
-		if ( isOpen ) {
-			closePicker( false );
-		} else {
-			openPicker();
-		}
+		openPanel();
 	} );
 
 	// A stored variant that this edition doesn't have → reset to the family default, tell the user once.
@@ -570,14 +591,8 @@ const HoloPanel = ( props ) => {
 		return null; // No image yet.
 	}
 
-	const onPopoverKeyDown = ( e ) => {
-		if ( e.key === 'Escape' ) {
-			e.stopPropagation();
-			closePicker( true );
-		} else if ( e.key === 'Enter' ) {
-			e.preventDefault();
-			closePicker( false );
-		} else if (
+	const onPanelKeyDown = ( e ) => {
+		if (
 			e.key === 'Backspace' &&
 			e.shiftKey &&
 			( e.metaKey || e.ctrlKey )
@@ -594,53 +609,22 @@ const HoloPanel = ( props ) => {
 		<>
 			<BlockControls group="other">
 				<ToolbarGroup>
-					<Dropdown
-						open={ isOpen }
-						onToggle={ ( willOpen ) =>
-							willOpen ? openPicker() : closePicker( false )
-						}
-						popoverProps={ {
-							placement: 'bottom-start',
-							offset: 8,
-						} }
-						contentClassName="holo-popover"
-						renderToggle={ ( { onToggle } ) => (
-							<ToolbarButton
-								icon={ <HoloIcon /> }
-								label={ __(
-									'Holo effect',
-									'holo-image-styles'
-								) }
-								shortcut="⇧⌥⌘H"
-								onClick={ onToggle }
-								aria-expanded={ isOpen }
-								isPressed={ isOpen || !! family }
-							>
-								{ __( 'Holo effect', 'holo-image-styles' ) }
-							</ToolbarButton>
-						) }
-						renderContent={ () => (
-							// eslint-disable-next-line jsx-a11y/no-static-element-interactions -- keyboard handling for the popover as a whole.
-							<div
-								className="holo-popover__inner"
-								onKeyDown={ onPopoverKeyDown }
-							>
-								<HoloControls { ...props } compact />
-								<p className="holo-popover__hint">
-									{ __(
-										'← → choose · Enter apply · Esc cancel · ⇧⌘⌫ remove',
-										'holo-image-styles'
-									) }
-								</p>
-							</div>
-						) }
-					/>
+					<ToolbarButton
+						icon={ <HoloIcon /> }
+						label={ __( 'Holo effect', 'holo-image-styles' ) }
+						shortcut="⇧⌥⌘H"
+						onClick={ openPanel }
+						isPressed={ !! family }
+					>
+						{ __( 'Holo effect', 'holo-image-styles' ) }
+					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody
 					title={ __( 'Holo effect', 'holo-image-styles' ) }
-					initialOpen={ !! family }
+					opened={ panelOpen }
+					onToggle={ setPanelOpen }
 				>
 					{ fallbackNotice && (
 						<Notice
@@ -651,7 +635,16 @@ const HoloPanel = ( props ) => {
 							{ fallbackNotice }
 						</Notice>
 					) }
-					<HoloControls { ...props } />
+					{ /* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- ⇧⌘⌫ shortcut scope */ }
+					<div className="holo-panel" onKeyDown={ onPanelKeyDown }>
+						<HoloControls { ...props } />
+						<p className="holo-panel__hint">
+							{ __(
+								'← → choose · ⇧⌘⌫ remove',
+								'holo-image-styles'
+							) }
+						</p>
+					</div>
 				</PanelBody>
 			</InspectorControls>
 		</>

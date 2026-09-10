@@ -189,5 +189,5 @@ msgid "Open the Holo effect picker for the selected image."
 msgstr "選択中の画像のホロ効果ピッカーを開く"
 
 #: build/editor.js:2
-msgid "← → choose · Enter apply · Esc cancel · ⇧⌘⌫ remove"
-msgstr "← → で選択 · Enter で決定 · Esc で取り消し · ⇧⌘⌫ で外す"
+msgid "← → choose · ⇧⌘⌫ remove"
+msgstr "← → で選択 · ⇧⌘⌫ で外す"

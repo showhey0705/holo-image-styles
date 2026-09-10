@@ -157,33 +157,37 @@ await frontTest( true );
 	await page.waitForTimeout( 200 );
 	check( '[editor] back to cosmos', ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-cosmos' ) );
 
-	// Toolbar button → popover with the same picker; hover a thumbnail → canvas preview attribute.
+	// Toolbar button → opens the sidebar (Settings tab) on the Holo effect panel and focuses the picker.
+	await page.locator( 'button[aria-label="Settings"]' ).first().click().catch( () => {} ); // close sidebar
+	await page.waitForTimeout( 300 );
 	await page.locator( '.block-editor-block-toolbar' ).getByRole( 'button', { name: 'Holo effect' } ).click();
-	const popover = page.locator( '.holo-popover' );
-	await popover.waitFor( { timeout: 5000 } ).catch( () => {} );
-	check( '[editor] toolbar popover opens with picker', await popover.locator( '.holo-picker' ).count() === 1 );
-	await popover.locator( '[data-variant="rare-holo"]' ).hover();
+	await page.waitForTimeout( 900 );
+	const sidePicker = page.locator( '.interface-complementary-area .holo-picker' );
+	check( '[editor] toolbar button opens the sidebar panel', await sidePicker.count() === 1 && await sidePicker.isVisible() );
+	check( '[editor] focus lands on the checked thumbnail', await page.evaluate( () => document.activeElement?.getAttribute( 'data-variant' ) ) === 'cosmos' );
+	// Hover a thumbnail of another family → canvas preview attribute.
+	await sidePicker.locator( '[data-variant="rare-holo"]' ).hover();
 	await page.waitForTimeout( 150 );
 	check( '[editor] hover sets canvas preview (other family)', ( await blk.getAttribute( 'data-holo-preview' ) ) === '1' && ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-holo' ) );
 	await page.mouse.move( 10, 10 );
 	await page.waitForTimeout( 150 );
 	check( '[editor] leaving clears preview', ( await blk.getAttribute( 'data-holo-preview' ) ) === null && ! ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-holo' ) );
-	// Arrow key → next effect applied; Escape → reverted to cosmos.
-	await popover.locator( '[data-variant="cosmos"]' ).focus();
+	// Arrow key → next effect applied.
+	await sidePicker.locator( '[data-variant="cosmos"]' ).focus();
 	await page.keyboard.press( 'ArrowRight' );
 	await page.waitForTimeout( 200 );
 	check( '[editor] arrow key picks the next effect', ( await blk.getAttribute( 'data-holo-variant' ) ) === 'rainbow-rare' );
-	await page.keyboard.press( 'Escape' );
+	await page.keyboard.press( 'ArrowLeft' );
+	await page.waitForTimeout( 200 );
+	check( '[editor] arrow back', ( await blk.getAttribute( 'data-holo-variant' ) ) === 'cosmos' );
+	// Shortcut ⇧⌥⌘H from the canvas opens the sidebar panel too.
+	await page.locator( 'button[aria-label="Settings"]' ).first().click().catch( () => {} );
 	await page.waitForTimeout( 300 );
-	check( '[editor] Escape reverts and closes', ( await blk.getAttribute( 'data-holo-variant' ) ) === 'cosmos' && ( await page.locator( '.holo-popover' ).count() ) === 0 );
-	// Shortcut ⇧⌥⌘H opens the popover for the selected block.
 	await blk.click();
 	await page.keyboard.press( process.platform === 'darwin' ? 'Shift+Alt+Meta+h' : 'Shift+Alt+Control+h' );
-	await page.waitForTimeout( 400 );
-	check( '[editor] ⇧⌥⌘H opens the popover', ( await page.locator( '.holo-popover .holo-picker' ).count() ) === 1 );
-	await page.keyboard.press( process.platform === 'darwin' ? 'Shift+Alt+Meta+h' : 'Shift+Alt+Control+h' );
-	await page.waitForTimeout( 300 );
-	check( '[editor] ⇧⌥⌘H again closes it', ( await page.locator( '.holo-popover' ).count() ) === 0 );
+	await page.waitForTimeout( 900 );
+	check( '[editor] ⇧⌥⌘H opens the sidebar panel', await page.locator( '.interface-complementary-area .holo-picker' ).isVisible().catch( () => false ) );
+
 	// Rounded corners: the wrapper copies the image radius.
 	const rounded = frame.locator( 'figure.is-style-rounded' ).first();
 	await rounded.scrollIntoViewIfNeeded();
