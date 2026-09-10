@@ -21,7 +21,6 @@ import {
 	Notice,
 	ExternalLink,
 	Button,
-	ToolbarGroup,
 	ToolbarButton,
 	SVG,
 	Path,
@@ -597,15 +596,14 @@ const HoloPanel = ( props ) => {
 	return (
 		<>
 			<BlockControls group="other">
-				<ToolbarGroup>
-					<ToolbarButton
-						icon={ <HoloIcon /> }
-						label={ __( 'Holo effect', 'holo-image-styles' ) }
-						shortcut="⇧⌥⌘H"
-						onClick={ openPanel }
-						isPressed={ !! family }
-					/>
-				</ToolbarGroup>
+				{ /* No ToolbarGroup of our own: core wraps the "other" group, so the button sits flush with its neighbours. */ }
+				<ToolbarButton
+					icon={ <HoloIcon /> }
+					label={ __( 'Holo effect', 'holo-image-styles' ) }
+					shortcut="⇧⌥⌘H"
+					onClick={ openPanel }
+					isPressed={ !! family }
+				/>
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody
