@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Holo Image Styles variants ledger",
+  "type": "object",
+  "required": ["families", "variants"],
+  "properties": {
+    "families": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label", "default", "glow"],
+        "properties": {
+          "label": { "type": "string" },
+          "default": { "type": "string" },
+          "glow": { "type": "string" }
+        }
+      }
+    },
+    "variants": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["family", "tier", "label", "source", "textures"],
+        "properties": {
+          "family": { "type": "string" },
+          "tier": { "enum": ["free", "all"] },
+          "label": { "type": "string" },
+          "source": { "type": "string" },
+          "textures": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

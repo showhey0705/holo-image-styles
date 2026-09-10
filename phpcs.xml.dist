@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<ruleset name="Holo Image Styles">
+  <description>WordPress-Extra + PHPCompatibilityWP for PHP 8.1+.</description>
+  <file>src/php</file>
+  <file>src/uninstall.php</file>
+  <arg name="extensions" value="php"/>
+  <arg value="sp"/>
+  <config name="testVersion" value="8.1-"/>
+  <config name="minimum_wp_version" value="6.7"/>
+  <rule ref="WordPress-Extra">
+    <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+    <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+  </rule>
+  <rule ref="PHPCompatibilityWP"/>
+  <rule ref="WordPress.WP.I18n">
+    <properties>
+      <property name="text_domain" type="array" value="holo-image-styles"/>
+    </properties>
+  </rule>
+  <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+    <properties>
+      <property name="prefixes" type="array" value="holo_image_styles,holo,HoloImageStyles,HOLO_"/>
+    </properties>
+  </rule>
+</ruleset>

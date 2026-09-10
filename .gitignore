@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+vendor/
+*.zip
+.DS_Store
+artifacts/
+test-results/
+playwright-report/
