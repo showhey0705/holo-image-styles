@@ -152,7 +152,7 @@ const observe = ( el ) => {
 						e.target._holoShowTimer = setTimeout( () => {
 							e.target._holoShowTimer = null;
 							startShowcase( e.target );
-						}, 300 );
+						}, 1000 );
 					}
 				} else {
 					if ( e.target._holoShowTimer ) {
@@ -303,7 +303,7 @@ store( NS, {
 			} else {
 				ref.classList.add( 'is-holo-armed' );
 				if ( ref.dataset.holoShowcase === '1' ) {
-					setTimeout( () => startShowcase( ref ), 300 );
+					setTimeout( () => startShowcase( ref ), 1000 );
 				}
 			}
 			// "glare" touch mode: a static sheen on touch-only devices, no tilt.
