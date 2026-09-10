@@ -20,13 +20,14 @@ final class Render {
 	/**
 	 * Attribute defaults. Must be identical to the JS defaults (SPEC §6.1).
 	 *
-	 * @var array{variant:string,intensity:float|int,tilt:float|int,touch:string,showcase:bool,window:bool}
+	 * @var array{variant:string,intensity:float|int,tilt:float|int,touch:string,glow:string,showcase:bool,window:bool}
 	 */
 	public const DEFAULTS = [
 		'variant'   => '',
 		'intensity' => 1,
 		'tilt'      => 1,
 		'touch'     => 'tap',
+		'glow'      => 'soft',
 		'showcase'  => false,
 		'window'    => false,
 	];
@@ -58,7 +59,7 @@ final class Render {
 	 *
 	 * @param mixed  $raw    Attribute value.
 	 * @param string $family Family slug.
-	 * @return array{variant:string,intensity:float,tilt:float,touch:string,showcase:bool,window:bool}
+	 * @return array{variant:string,intensity:float,tilt:float,touch:string,glow:string,showcase:bool,window:bool}
 	 */
 	public static function sanitize_holo( $raw, string $family ): array {
 		$raw   = is_array( $raw ) ? $raw : [];
@@ -72,12 +73,17 @@ final class Render {
 		if ( ! in_array( $touch, [ 'tap', 'glare', 'off' ], true ) ) {
 			$touch = self::DEFAULTS['touch'];
 		}
+		$glow = isset( $raw['glow'] ) && is_string( $raw['glow'] ) ? $raw['glow'] : self::DEFAULTS['glow'];
+		if ( ! in_array( $glow, [ 'soft', 'none', 'color' ], true ) ) {
+			$glow = self::DEFAULTS['glow'];
+		}
 		$variant = isset( $raw['variant'] ) && is_string( $raw['variant'] ) ? sanitize_key( $raw['variant'] ) : '';
 		return [
 			'variant'   => Variants::resolve( $family, $variant ),
 			'intensity' => $num( $raw['intensity'] ?? null, (float) self::DEFAULTS['intensity'] ),
 			'tilt'      => $num( $raw['tilt'] ?? null, (float) self::DEFAULTS['tilt'] ),
 			'touch'     => $touch,
+			'glow'      => $glow,
 			'showcase'  => ! empty( $raw['showcase'] ),
 			'window'    => ! empty( $raw['window'] ),
 		];
@@ -87,7 +93,7 @@ final class Render {
 	 * Build the inline style for `.holo__card` (custom properties only).
 	 *
 	 * @param string                                                                              $family Family slug.
-	 * @param array{variant:string,intensity:float,tilt:float,touch:string,showcase:bool,window:bool} $holo   Sanitized attribute.
+	 * @param array{variant:string,intensity:float,tilt:float,touch:string,glow:string,showcase:bool,window:bool} $holo   Sanitized attribute.
 	 * @param array<string,mixed>                                                                 $attrs  Block attributes (for border radius).
 	 */
 	public static function card_style( string $family, array $holo, array $attrs = [] ): string {
@@ -180,14 +186,15 @@ final class Render {
 		$style = self::card_style( $family, $holo, $attrs );
 
 		$wrapper_open = sprintf(
-			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="%7$s::callbacks.init" data-wp-on-async--pointermove="%7$s::actions.move" data-wp-on-async--pointerleave="%7$s::actions.leave" data-wp-on-async--pointerdown="%7$s::actions.down">',
+			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s" data-holo-glow="%8$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="%7$s::callbacks.init" data-wp-on-async--pointermove="%7$s::actions.move" data-wp-on-async--pointerleave="%7$s::actions.leave" data-wp-on-async--pointerdown="%7$s::actions.down">',
 			esc_attr( $holo['variant'] ),
 			esc_attr( $holo['touch'] ),
 			$holo['showcase'] ? ' data-holo-showcase="1"' : '',
 			$holo['window'] ? ' data-holo-window="1"' : '',
 			esc_attr( $style ),
 			esc_attr( $region_ns ),
-			esc_attr( self::INTERACTIVITY_NS )
+			esc_attr( self::INTERACTIVITY_NS ),
+			esc_attr( $holo['glow'] )
 		);
 		$layers       = '<span class="holo__shine" aria-hidden="true"></span><span class="holo__glare" aria-hidden="true"></span>';
 

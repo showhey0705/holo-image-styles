@@ -168,6 +168,28 @@ const bindVisibility = () => {
 	} );
 };
 
+/**
+ * Copy the rendered border-radius of the image (theme CSS or the block's own "Radius" setting) onto the
+ * card so shine/glare layers get the same rounded corners; otherwise square layers show at the corners.
+ *
+ * @param {HTMLElement} card The .holo__card element.
+ */
+const syncRadius = ( card ) => {
+	const img = card.querySelector( 'img' );
+	if ( ! img ) {
+		return;
+	}
+	let radius = getComputedStyle( img ).borderRadius;
+	if ( ! radius || /^0(px)?(\s+0(px)?)*$/.test( radius ) ) {
+		const figure = card.closest( 'figure' );
+		radius = figure ? getComputedStyle( figure ).borderRadius : '';
+	}
+	if ( radius && ! /^0(px)?(\s+0(px)?)*$/.test( radius ) ) {
+		card.style.setProperty( '--holo-radius', radius );
+		img.style.borderRadius = 'inherit';
+	}
+};
+
 store( NS, {
 	actions: {
 		move( event ) {
@@ -226,6 +248,7 @@ store( NS, {
 		init() {
 			const { ref } = getElement();
 			setVars( ref, REST );
+			syncRadius( ref );
 			bindVisibility();
 			if ( 'IntersectionObserver' in window ) {
 				observe( ref );

@@ -53,7 +53,11 @@
 	z-index: 1;
 	background-size: cover;
 	background-position: center;
-	border-radius: inherit;
+	border-radius: var(--holo-radius, 0);
+}
+
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"] img {
+	border-radius: var(--holo-radius, inherit);
 }
 
 /* Shine layer (family specific colours; roughly the first gradient of each family's default variant). */

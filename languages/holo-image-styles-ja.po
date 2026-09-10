@@ -1,5 +1,3 @@
-# Copyright (C) 2026 Shohei
-# This file is distributed under the GPL-3.0-or-later.
 msgid ""
 msgstr ""
 "Project-Id-Version: Holo Image Styles (All Effects) 1.0.0\n"
@@ -11,6 +9,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-09-10T03:56:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Language: \n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: holo-image-styles\n"
 
@@ -164,3 +163,31 @@ msgstr "「%s」はこのエディションに含まれないため、このフ�
 #: build/editor.js:2
 msgid "Holo effect"
 msgstr "ホロ効果"
+
+#: build/editor.js:1
+msgid "Remove effect"
+msgstr "効果を外す"
+
+#: build/editor.js:1
+msgid "Shadow"
+msgstr "影"
+
+#: build/editor.js:1
+msgid "None"
+msgstr "なし"
+
+#: build/editor.js:1
+msgid "Soft"
+msgstr "なじませる"
+
+#: build/editor.js:1
+msgid "Glow"
+msgstr "光る"
+
+#: build/editor.js:1
+msgid "Open the Holo effect picker for the selected image."
+msgstr "選択中の画像のホロ効果ピッカーを開く"
+
+#: build/editor.js:2
+msgid "← → choose · Enter apply · Esc cancel · ⇧⌘⌫ remove"
+msgstr "← → で選択 · Enter で決定 · Esc で取り消し · ⇧⌘⌫ で外す"

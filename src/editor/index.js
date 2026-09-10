@@ -1,12 +1,15 @@
 /**
- * Holo Image Styles — editor integration (SPEC §6, v1.1 picker UI).
+ * Holo Image Styles — editor integration (SPEC §6, v1.2 picker UI).
  *
  * 1. Adds the `holo` attribute to core/image (same defaults as the server).
- * 2. "Holo effect" controls: a thumbnail grid of the family's effects (static WebP rendered from the
- *    real front-end CSS at build time), presets, and advanced sliders. Shown in the inspector and in a
- *    toolbar popover, only while an is-style-holo-* style is active.
+ * 2. "Holo effect" controls: every effect of this edition as a static thumbnail, grouped by family.
+ *    Choosing one sets the block style (is-style-holo-{family}) AND holo.variant in one click.
+ *    Shown in the inspector and in a toolbar popover for every Image block.
  * 3. Hovering a thumbnail previews that effect on the canvas (CSS-only preview, no cost).
- * 4. Passes data-holo-variant + CSS variables to the block wrapper so editor.css can draw the preview.
+ * 4. ⇧⌥⌘H opens/closes the popover for the selected Image block; ← → pick, Enter commits, Esc reverts,
+ *    ⇧⌘⌫ removes the effect.
+ * 5. Passes data-holo-variant + CSS variables to the block wrapper so editor.css can draw the preview,
+ *    and copies the image's border-radius onto the wrapper so the preview corners match.
  */
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
@@ -26,7 +29,12 @@ import {
 	__experimentalToggleGroupControl as ToggleGroupControl,
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
-import { useEffect, useState, useCallback } from '@wordpress/element';
+import { useEffect, useState, useCallback, useRef } from '@wordpress/element';
+import { useDispatch } from '@wordpress/data';
+import {
+	store as keyboardShortcutsStore,
+	useShortcut,
+} from '@wordpress/keyboard-shortcuts';
 import { __, sprintf } from '@wordpress/i18n';
 
 const DATA = window.holoImageStyles || {
@@ -42,10 +50,15 @@ const DEFAULTS = {
 	intensity: 1,
 	tilt: 1,
 	touch: 'tap',
+	glow: 'soft',
 	showcase: false,
 	window: false,
 	...( DATA.defaults || {} ),
 };
+
+const FAMILY_ORDER = Object.keys( DATA.families );
+const ALL_VARIANTS = Object.keys( DATA.variants );
+const SHORTCUT_NAME = 'holo-image-styles/toggle-picker';
 
 /* Presets: intensity / tilt pairs. "custom" when the sliders don't match any of them. */
 const PRESETS = {
@@ -65,10 +78,39 @@ const familyFromClass = ( className = '' ) => {
 	return m && DATA.families[ m[ 1 ] ] ? m[ 1 ] : '';
 };
 
-const variantsFor = ( family ) =>
-	Object.entries( DATA.variants )
-		.filter( ( [ , v ] ) => v.family === family )
-		.map( ( [ key, v ] ) => ( { value: key, label: v.label } ) );
+/**
+ * Replace any is-style-* class with the holo family style ('' removes the style).
+ *
+ * @param {string} className Current className attribute.
+ * @param {string} family    Holo family slug, or '' to remove the style.
+ * @return {string} New className.
+ */
+const withStyleClass = ( className = '', family ) => {
+	const rest = ( className || '' )
+		.split( /\s+/ )
+		.filter( ( c ) => c && ! /^is-style-/.test( c ) );
+	if ( family ) {
+		rest.push( `is-style-holo-${ family }` );
+	}
+	return rest.join( ' ' );
+};
+
+/**
+ * Effective variant key for the block ('' when no holo style).
+ *
+ * @param {Object} attributes Block attributes.
+ * @return {string} Variant key.
+ */
+const currentVariant = ( attributes ) => {
+	const family = familyFromClass( attributes.className );
+	if ( ! family ) {
+		return '';
+	}
+	const v = attributes.holo?.variant;
+	return v && DATA.variants[ v ] && DATA.variants[ v ].family === family
+		? v
+		: DATA.families[ family ]?.default || '';
+};
 
 const HoloIcon = () => (
 	<SVG
@@ -130,18 +172,35 @@ addFilter(
 	}
 );
 
-/* 2a. Thumbnail grid (radio semantics) */
-const VariantPicker = ( {
-	family,
-	value,
-	onChange,
-	clientId,
-	columns = 3,
-} ) => {
-	const options = variantsFor( family );
-	const current = value || DATA.families[ family ]?.default || '';
+/* 2a. Thumbnail grid: every variant, grouped by family (radio semantics + arrow keys) */
+const VariantPicker = ( { value, onChange, clientId, columns = 3 } ) => {
 	const clear = useCallback( () => setPreview( clientId, '' ), [ clientId ] );
 	useEffect( () => clear, [ clear ] );
+
+	const onKeyDown = ( e ) => {
+		const idx = ALL_VARIANTS.indexOf( value );
+		let next = null;
+		if ( e.key === 'ArrowRight' || e.key === 'ArrowDown' ) {
+			next = ALL_VARIANTS[ ( idx + 1 ) % ALL_VARIANTS.length ];
+		} else if ( e.key === 'ArrowLeft' || e.key === 'ArrowUp' ) {
+			next =
+				ALL_VARIANTS[
+					( idx - 1 + ALL_VARIANTS.length ) % ALL_VARIANTS.length
+				];
+		} else if ( e.key === 'Home' ) {
+			next = ALL_VARIANTS[ 0 ];
+		} else if ( e.key === 'End' ) {
+			next = ALL_VARIANTS[ ALL_VARIANTS.length - 1 ];
+		}
+		if ( next ) {
+			e.preventDefault();
+			onChange( next );
+			e.currentTarget
+				.querySelector( `[data-variant="${ next }"]` )
+				?.focus();
+		}
+	};
+
 	return (
 		// eslint-disable-next-line jsx-a11y/interactive-supports-focus -- the radios inside are the focusable elements.
 		<div
@@ -150,37 +209,67 @@ const VariantPicker = ( {
 			aria-label={ __( 'Effect', 'holo-image-styles' ) }
 			style={ { '--holo-picker-columns': columns } }
 			onMouseLeave={ clear }
+			onKeyDown={ onKeyDown }
 		>
-			{ options.map( ( opt ) => {
-				const checked = opt.value === current;
+			{ FAMILY_ORDER.map( ( family ) => {
+				const keys = ALL_VARIANTS.filter(
+					( k ) => DATA.variants[ k ].family === family
+				);
+				if ( ! keys.length ) {
+					return null;
+				}
 				return (
-					<button
-						type="button"
-						key={ opt.value }
-						role="radio"
-						aria-checked={ checked }
-						className={
-							'holo-picker__item' +
-							( checked ? ' is-checked' : '' )
-						}
-						onClick={ () => onChange( opt.value ) }
-						onMouseEnter={ () => setPreview( clientId, opt.value ) }
-						onFocus={ () => setPreview( clientId, opt.value ) }
-						onBlur={ clear }
-					>
-						<img
-							src={ `${ DATA.thumbsUrl }${ opt.value }.webp` }
-							alt=""
-							width="160"
-							height="224"
-							loading="lazy"
-							decoding="async"
-							draggable="false"
-						/>
-						<span className="holo-picker__label">
-							{ opt.label }
-						</span>
-					</button>
+					<div className="holo-picker__family" key={ family }>
+						<div className="holo-picker__family-head">
+							<span>{ DATA.families[ family ].label }</span>
+							<span className="holo-picker__count">
+								{ keys.length }
+							</span>
+						</div>
+						<div className="holo-picker__grid">
+							{ keys.map( ( key ) => {
+								const checked = key === value;
+								const focusable =
+									checked ||
+									( ! value && key === ALL_VARIANTS[ 0 ] );
+								return (
+									<button
+										type="button"
+										key={ key }
+										data-variant={ key }
+										role="radio"
+										aria-checked={ checked }
+										tabIndex={ focusable ? 0 : -1 }
+										className={
+											'holo-picker__item' +
+											( checked ? ' is-checked' : '' )
+										}
+										onClick={ () => onChange( key ) }
+										onMouseEnter={ () =>
+											setPreview( clientId, key )
+										}
+										onFocus={ () =>
+											setPreview( clientId, key )
+										}
+										onBlur={ clear }
+									>
+										<img
+											src={ `${ DATA.thumbsUrl }${ key }.webp` }
+											alt=""
+											width="160"
+											height="224"
+											loading="lazy"
+											decoding="async"
+											draggable="false"
+										/>
+										<span className="holo-picker__label">
+											{ DATA.variants[ key ].label }
+										</span>
+									</button>
+								);
+							} ) }
+						</div>
+					</div>
 				);
 			} ) }
 		</div>
@@ -189,68 +278,97 @@ const VariantPicker = ( {
 
 /* 2b. All controls (shared by the inspector panel and the toolbar popover) */
 const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
-	const family = familyFromClass( attributes.className );
 	const holo = { ...DEFAULTS, ...( attributes.holo || {} ) };
+	const variant = currentVariant( attributes );
+	const hasHolo = !! variant;
 	const update = ( patch ) =>
 		setAttributes( { holo: { ...holo, ...patch } } );
-	const familyDefault = DATA.families[ family ]?.default || '';
 	const [ advanced, setAdvanced ] = useState( presetOf( holo ) === 'custom' );
 	const preset = presetOf( holo );
+
+	const choose = ( key ) => {
+		const family = DATA.variants[ key ]?.family;
+		if ( ! family ) {
+			return;
+		}
+		const familyDefault = DATA.families[ family ]?.default || '';
+		setAttributes( {
+			className: withStyleClass( attributes.className, family ),
+			holo: { ...holo, variant: key === familyDefault ? '' : key },
+		} );
+	};
+	const remove = () =>
+		setAttributes( {
+			className: withStyleClass( attributes.className, '' ),
+			holo: { ...holo, variant: '' },
+		} );
 
 	return (
 		<>
 			<VariantPicker
-				family={ family }
-				value={ holo.variant }
+				value={ variant }
 				clientId={ clientId }
 				columns={ compact ? 4 : 3 }
-				onChange={ ( v ) =>
-					update( { variant: v === familyDefault ? '' : v } )
-				}
+				onChange={ choose }
 			/>
-			<ToggleGroupControl
-				label={ __( 'Strength', 'holo-image-styles' ) }
-				value={ preset }
-				onChange={ ( v ) => {
-					if ( PRESETS[ v ] ) {
-						update( PRESETS[ v ] );
-					}
-				} }
-				isBlock
-				__nextHasNoMarginBottom
-				__next40pxDefaultSize
-			>
-				<ToggleGroupControlOption
-					value="subtle"
-					label={ __( 'Subtle', 'holo-image-styles' ) }
-				/>
-				<ToggleGroupControlOption
-					value="normal"
-					label={ __( 'Normal', 'holo-image-styles' ) }
-				/>
-				<ToggleGroupControlOption
-					value="bold"
-					label={ __( 'Bold', 'holo-image-styles' ) }
-				/>
-				{ preset === 'custom' && (
-					<ToggleGroupControlOption
-						value="custom"
-						label={ __( 'Custom', 'holo-image-styles' ) }
-					/>
-				) }
-			</ToggleGroupControl>
-			<Button
-				variant="link"
-				size="small"
-				className="holo-advanced-toggle"
-				onClick={ () => setAdvanced( ! advanced ) }
-				aria-expanded={ advanced }
-			>
-				{ advanced
-					? __( 'Hide details', 'holo-image-styles' )
-					: __( 'Fine-tune…', 'holo-image-styles' ) }
-			</Button>
-			{ advanced && (
+			{ hasHolo && (
+				<>
+					<ToggleGroupControl
+						label={ __( 'Strength', 'holo-image-styles' ) }
+						value={ preset }
+						onChange={ ( v ) => {
+							if ( PRESETS[ v ] ) {
+								update( PRESETS[ v ] );
+							}
+						} }
+						isBlock
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+					>
+						<ToggleGroupControlOption
+							value="subtle"
+							label={ __( 'Subtle', 'holo-image-styles' ) }
+						/>
+						<ToggleGroupControlOption
+							value="normal"
+							label={ __( 'Normal', 'holo-image-styles' ) }
+						/>
+						<ToggleGroupControlOption
+							value="bold"
+							label={ __( 'Bold', 'holo-image-styles' ) }
+						/>
+						{ preset === 'custom' && (
+							<ToggleGroupControlOption
+								value="custom"
+								label={ __( 'Custom', 'holo-image-styles' ) }
+							/>
+						) }
+					</ToggleGroupControl>
+					<div className="holo-actions">
+						<Button
+							variant="link"
+							size="small"
+							className="holo-advanced-toggle"
+							onClick={ () => setAdvanced( ! advanced ) }
+							aria-expanded={ advanced }
+						>
+							{ advanced
+								? __( 'Hide details', 'holo-image-styles' )
+								: __( 'Fine-tune…', 'holo-image-styles' ) }
+						</Button>
+						<Button
+							variant="link"
+							size="small"
+							isDestructive
+							className="holo-remove"
+							onClick={ remove }
+						>
+							{ __( 'Remove effect', 'holo-image-styles' ) }
+						</Button>
+					</div>
+				</>
+			) }
+			{ hasHolo && advanced && (
 				<div className="holo-advanced">
 					<RangeControl
 						label={ __( 'Intensity', 'holo-image-styles' ) }
@@ -276,6 +394,27 @@ const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 					/>
+					<ToggleGroupControl
+						label={ __( 'Shadow', 'holo-image-styles' ) }
+						value={ holo.glow }
+						onChange={ ( v ) => update( { glow: v } ) }
+						isBlock
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+					>
+						<ToggleGroupControlOption
+							value="none"
+							label={ __( 'None', 'holo-image-styles' ) }
+						/>
+						<ToggleGroupControlOption
+							value="soft"
+							label={ __( 'Soft', 'holo-image-styles' ) }
+						/>
+						<ToggleGroupControlOption
+							value="color"
+							label={ __( 'Glow', 'holo-image-styles' ) }
+						/>
+					</ToggleGroupControl>
 					<ToggleGroupControl
 						label={ __( 'Touch devices', 'holo-image-styles' ) }
 						value={ holo.touch }
@@ -334,21 +473,80 @@ const HoloControls = ( { attributes, setAttributes, clientId, compact } ) => {
 	);
 };
 
-/* 2c. Inspector panel + toolbar popover */
+/* 2c. Inspector panel + toolbar popover + keyboard shortcut */
+let shortcutRegistered = false;
+const useRegisterShortcut = () => {
+	const { registerShortcut } = useDispatch( keyboardShortcutsStore );
+	useEffect( () => {
+		if ( shortcutRegistered ) {
+			return;
+		}
+		shortcutRegistered = true;
+		registerShortcut( {
+			name: SHORTCUT_NAME,
+			category: 'block',
+			description: __(
+				'Open the Holo effect picker for the selected image.',
+				'holo-image-styles'
+			),
+			keyCombination: { modifier: 'secondary', character: 'h' }, // ⇧⌥⌘H — ⇧⌘H is core's "toggle block visibility" since WP 7.x, ⌥⌘H is macOS "Hide Others".,
+		} );
+	}, [ registerShortcut ] );
+};
+
 const HoloPanel = ( props ) => {
-	const { attributes, setAttributes } = props;
+	const { attributes, setAttributes, isSelected } = props;
 	const family = familyFromClass( attributes.className );
 	const holo = { ...DEFAULTS, ...( attributes.holo || {} ) };
 	const [ fallbackNotice, setFallbackNotice ] = useState( '' );
+	const [ isOpen, setOpen ] = useState( false );
+	const snapshot = useRef( null );
+	useRegisterShortcut();
 
-	// Family changed (className) or a variant that this edition doesn't have → reset to the family default.
+	const openPicker = () => {
+		snapshot.current = {
+			className: attributes.className,
+			holo: attributes.holo,
+		};
+		if ( ! family && FAMILY_ORDER.length ) {
+			// Start from the first family's default so the user sees something right away.
+			setAttributes( {
+				className: withStyleClass(
+					attributes.className,
+					FAMILY_ORDER[ 0 ]
+				),
+				holo: { ...holo, variant: '' },
+			} );
+		}
+		setOpen( true );
+	};
+	const closePicker = ( revert ) => {
+		if ( revert && snapshot.current ) {
+			setAttributes( snapshot.current );
+		}
+		snapshot.current = null;
+		setOpen( false );
+	};
+
+	useShortcut( SHORTCUT_NAME, ( e ) => {
+		if ( ! isSelected || ! attributes.url ) {
+			return;
+		}
+		e.preventDefault();
+		if ( isOpen ) {
+			closePicker( false );
+		} else {
+			openPicker();
+		}
+	} );
+
+	// A stored variant that this edition doesn't have → reset to the family default, tell the user once.
 	useEffect( () => {
 		if ( ! family ) {
 			return;
 		}
 		const current = holo.variant;
 		if ( current && ! DATA.variants[ current ] ) {
-			// Stored value from another edition (SPEC §7.4): keep the default, tell the user once.
 			setFallbackNotice(
 				sprintf(
 					/* translators: %s: effect name. */
@@ -368,37 +566,72 @@ const HoloPanel = ( props ) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ family ] );
 
-	if ( ! family ) {
-		return null;
+	if ( ! attributes.url ) {
+		return null; // No image yet.
 	}
+
+	const onPopoverKeyDown = ( e ) => {
+		if ( e.key === 'Escape' ) {
+			e.stopPropagation();
+			closePicker( true );
+		} else if ( e.key === 'Enter' ) {
+			e.preventDefault();
+			closePicker( false );
+		} else if (
+			e.key === 'Backspace' &&
+			e.shiftKey &&
+			( e.metaKey || e.ctrlKey )
+		) {
+			e.preventDefault();
+			setAttributes( {
+				className: withStyleClass( attributes.className, '' ),
+				holo: { ...holo, variant: '' },
+			} );
+		}
+	};
 
 	return (
 		<>
 			<BlockControls group="other">
 				<ToolbarGroup>
 					<Dropdown
+						open={ isOpen }
+						onToggle={ ( willOpen ) =>
+							willOpen ? openPicker() : closePicker( false )
+						}
 						popoverProps={ {
 							placement: 'bottom-start',
 							offset: 8,
 						} }
 						contentClassName="holo-popover"
-						renderToggle={ ( { isOpen, onToggle } ) => (
+						renderToggle={ ( { onToggle } ) => (
 							<ToolbarButton
 								icon={ <HoloIcon /> }
 								label={ __(
 									'Holo effect',
 									'holo-image-styles'
 								) }
+								shortcut="⇧⌥⌘H"
 								onClick={ onToggle }
 								aria-expanded={ isOpen }
-								isPressed={ isOpen }
+								isPressed={ isOpen || !! family }
 							>
 								{ __( 'Holo effect', 'holo-image-styles' ) }
 							</ToolbarButton>
 						) }
 						renderContent={ () => (
-							<div className="holo-popover__inner">
+							// eslint-disable-next-line jsx-a11y/no-static-element-interactions -- keyboard handling for the popover as a whole.
+							<div
+								className="holo-popover__inner"
+								onKeyDown={ onPopoverKeyDown }
+							>
 								<HoloControls { ...props } compact />
+								<p className="holo-popover__hint">
+									{ __(
+										'← → choose · Enter apply · Esc cancel · ⇧⌘⌫ remove',
+										'holo-image-styles'
+									) }
+								</p>
 							</div>
 						) }
 					/>
@@ -407,7 +640,7 @@ const HoloPanel = ( props ) => {
 			<InspectorControls>
 				<PanelBody
 					title={ __( 'Holo effect', 'holo-image-styles' ) }
-					initialOpen
+					initialOpen={ !! family }
 				>
 					{ fallbackNotice && (
 						<Notice
@@ -441,23 +674,47 @@ const withHoloPanel = createHigherOrderComponent( ( BlockEdit ) => {
 
 addFilter( 'editor.BlockEdit', 'holo-image-styles/panel', withHoloPanel );
 
-/* 3./4. Wrapper props for the editor preview (hover preview wins over the saved value) */
+/* 5. Wrapper props for the editor preview (hover preview wins over the saved value) */
 const HoloWrapper = ( { BlockListBlock, ...props } ) => {
 	const family = familyFromClass( props.attributes.className );
 	const preview = usePreview( props.clientId );
-	if ( ! family ) {
+	const saved = currentVariant( props.attributes );
+	const previewFamily = preview && DATA.variants[ preview ]?.family;
+	const effectiveFamily = previewFamily || family;
+
+	// Copy the image's rendered border-radius onto the wrapper so the preview corners match (see view/index.js).
+	useEffect( () => {
+		if ( ! effectiveFamily ) {
+			return;
+		}
+		const doc =
+			document.querySelector( 'iframe[name="editor-canvas"]' )
+				?.contentDocument || document;
+		const el = doc.getElementById( `block-${ props.clientId }` );
+		const img = el?.querySelector( 'img' );
+		if ( ! el || ! img ) {
+			return;
+		}
+		const radius = doc.defaultView.getComputedStyle( img ).borderRadius;
+		if ( radius && ! /^0(px)?(\s+0(px)?)*$/.test( radius ) ) {
+			el.style.setProperty( '--holo-radius', radius );
+		}
+	}, [ effectiveFamily, props.clientId, props.attributes.style ] );
+
+	if ( ! effectiveFamily ) {
 		return <BlockListBlock { ...props } />;
 	}
 	const holo = { ...DEFAULTS, ...( props.attributes.holo || {} ) };
-	const saved =
-		holo.variant && DATA.variants[ holo.variant ]
-			? holo.variant
-			: DATA.families[ family ]?.default || '';
 	const variant = preview && DATA.variants[ preview ] ? preview : saved;
+	const className = previewFamily
+		? [ props.className, `is-style-holo-${ previewFamily }` ]
+				.filter( Boolean )
+				.join( ' ' )
+		: props.className;
 	const style = {
 		...( props.wrapperProps?.style || {} ),
 		'--holo-intensity': String( holo.intensity ),
-		'--holo-glow': DATA.families[ family ]?.glow || '',
+		'--holo-glow': DATA.families[ effectiveFamily ]?.glow || '',
 	};
 	const wrapperProps = {
 		...props.wrapperProps,
@@ -466,7 +723,13 @@ const HoloWrapper = ( { BlockListBlock, ...props } ) => {
 		'data-holo-preview': preview ? '1' : undefined,
 		style,
 	};
-	return <BlockListBlock { ...props } wrapperProps={ wrapperProps } />;
+	return (
+		<BlockListBlock
+			{ ...props }
+			className={ className }
+			wrapperProps={ wrapperProps }
+		/>
+	);
 };
 
 const withHoloWrapper = createHigherOrderComponent( ( BlockListBlock ) => {

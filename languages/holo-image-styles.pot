@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-10T03:56:26+00:00\n"
+"POT-Creation-Date: 2026-09-10T04:17:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: holo-image-styles\n"
@@ -108,11 +108,31 @@ msgid "Fine-tune…"
 msgstr ""
 
 #: build/editor.js:1
+msgid "Remove effect"
+msgstr ""
+
+#: build/editor.js:1
 msgid "Intensity"
 msgstr ""
 
 #: build/editor.js:1
 msgid "Tilt"
+msgstr ""
+
+#: build/editor.js:1
+msgid "Shadow"
+msgstr ""
+
+#: build/editor.js:1
+msgid "None"
+msgstr ""
+
+#: build/editor.js:1
+msgid "Soft"
+msgstr ""
+
+#: build/editor.js:1
+msgid "Glow"
 msgstr ""
 
 #: build/editor.js:1
@@ -155,6 +175,10 @@ msgstr ""
 msgid "Learn more"
 msgstr ""
 
+#: build/editor.js:1
+msgid "Open the Holo effect picker for the selected image."
+msgstr ""
+
 #. translators: %s: effect name.
 #: build/editor.js:2
 #, js-format
@@ -163,4 +187,8 @@ msgstr ""
 
 #: build/editor.js:2
 msgid "Holo effect"
+msgstr ""
+
+#: build/editor.js:2
+msgid "← → choose · Enter apply · Esc cancel · ⇧⌘⌫ remove"
 msgstr ""

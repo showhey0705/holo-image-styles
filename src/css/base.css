@@ -117,14 +117,8 @@
 
 .holo__card.is-interacting {
 	z-index: 2;
-	/* Glow while interacting (from the original .card.active box-shadow). */
-	box-shadow:
-		0 0 3px -1px white,
-		0 0 3px 1px var(--card-edge),
-		0 0 12px 2px var(--holo-glow),
-		0 10px 20px -5px rgba(0, 0, 0, 0.6),
-		0 0 40px -30px var(--holo-glow),
-		0 0 50px -20px var(--holo-glow);
+	/* Shadow while interacting. Default "soft": a neutral drop shadow that fits any theme. */
+	box-shadow: 0 18px 30px -18px rgba(0, 0, 0, 0.45);
 	transition:
 		--pointer-x 0.08s linear,
 		--pointer-y 0.08s linear,
@@ -136,6 +130,21 @@
 		--pointer-from-center 0.08s linear,
 		--pointer-from-top 0.08s linear,
 		--pointer-from-left 0.08s linear;
+}
+
+/* Shadow modes (data-holo-glow): soft (default) / none / color (the original coloured glow). */
+.holo__card[data-holo-glow="none"].is-interacting {
+	box-shadow: none;
+}
+
+.holo__card[data-holo-glow="color"].is-interacting {
+	box-shadow:
+		0 0 3px -1px white,
+		0 0 3px 1px var(--card-edge),
+		0 0 12px 2px var(--holo-glow),
+		0 10px 20px -5px rgba(0, 0, 0, 0.6),
+		0 0 40px -30px var(--holo-glow),
+		0 0 50px -20px var(--holo-glow);
 }
 
 /* Everything stacks on the same grid cell. */

@@ -694,3 +694,14 @@ JADE Pro 購読者は購入ボタンが出ず、最初からダウンロード�
 | e2e | wp-env + Playwright 5 本 | `tests/e2e/*.mjs`（実 WordPress 7.1 に対して実行、CI では wp-env） | 同等の 5 ケース＋23 バリアントの描画確認 |
 | エディタ figure | — | `width: fit-content` | 全幅のブロックラッパーにプレビュー層がはみ出すため |
 | §14（アカウントページ配布） | jadepro 側 | 本リポジトリ外（release.yml に step のみ） | jadepro-account プラグイン / Supabase 側の作業 |
+
+## 付録 C. v1.2（2026-09-10）の変更
+
+| 項目 | 内容 |
+|---|---|
+| ホロ効果パネル | 全バリアントをファミリー見出し付きの静止画サムネで一覧表示。1 枚選ぶと `className`（`is-style-holo-{family}`）と `holo.variant` を同時に設定。すべての画像ブロックに表示（ホロ未適用でも選べる）。「効果を外す」で解除 |
+| ツールバー | 「ホロ効果」ボタン → ポップオーバー（同じ UI）。← → で選択、Enter で決定、Esc で開く前に戻す、⇧⌘⌫ で外す |
+| ショートカット | **⇧⌥⌘H**（`secondary` + h）。⇧⌘H は WP 7.x コアの「ブロックの表示/非表示」、⌥⌘H は macOS の「ほかを隠す」と衝突するため |
+| 角丸 | フロント/エディタとも JS が画像（無ければ figure）の computed `border-radius` を読み `--holo-radius` に写す。テーマ CSS の角丸でも黒い角が出ない |
+| 影 | 属性 `holo.glow`: `soft`（既定・中立な落ち影）/ `none` / `color`（原作のファミリー色グロー）。`data-holo-glow` で出力 |
+| サムネ | `bin/thumbs.mjs` が実 CSS を Playwright で描画して生成。cosmos は bottom を不透明 PNG 由来（原作どおり）にし、middle/top は alpha を保持した WebP に修正 |

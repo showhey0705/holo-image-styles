@@ -141,23 +141,52 @@ await frontTest( true );
 	check( '[editor] free help line', await page.locator( '.interface-complementary-area .holo-image-styles__help' ).count() === 1 );
 	const radios = picker.getByRole( 'radio' );
 	const labels = await radios.allTextContents();
-	check( '[editor] cosmos family has 1 thumbnail in free', labels.length === 1 && labels[ 0 ] === 'Galaxy / Cosmos', labels.join( ',' ) );
+	check( '[editor] free edition shows all 7 effects grouped', labels.length === 7 && ( await picker.locator( '.holo-picker__family' ).count() ) === 7, labels.join( ',' ) );
+	check( '[editor] cosmos is checked', ( await picker.locator( '[data-variant="cosmos"]' ).getAttribute( 'aria-checked' ) ) === 'true' );
 	const thumbOk = await radios.first().locator( 'img' ).evaluate( ( img ) => img.complete && img.naturalWidth > 0 );
 	check( '[editor] thumbnail image loads', thumbOk === true );
 	check( '[editor] strength presets', await page.locator( '.interface-complementary-area' ).getByRole( 'radio', { name: 'Normal' } ).count() === 1 );
+
+	const blk = frame.locator( '#' + ( await wrap.getAttribute( 'id' ) ) );
+	// Click another family's thumbnail → className switches style, canvas follows.
+	await picker.locator( '[data-variant="secret-rare"]' ).click();
+	await page.waitForTimeout( 200 );
+	check( '[editor] picking another family switches the block style', ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-metallic' ) && ! ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-cosmos' ) );
+	check( '[editor] canvas shows the new variant', ( await blk.getAttribute( 'data-holo-variant' ) ) === 'secret-rare' );
+	await picker.locator( '[data-variant="cosmos"]' ).click();
+	await page.waitForTimeout( 200 );
+	check( '[editor] back to cosmos', ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-cosmos' ) );
 
 	// Toolbar button → popover with the same picker; hover a thumbnail → canvas preview attribute.
 	await page.locator( '.block-editor-block-toolbar' ).getByRole( 'button', { name: 'Holo effect' } ).click();
 	const popover = page.locator( '.holo-popover' );
 	await popover.waitFor( { timeout: 5000 } ).catch( () => {} );
 	check( '[editor] toolbar popover opens with picker', await popover.locator( '.holo-picker' ).count() === 1 );
-	await popover.getByRole( 'radio' ).first().hover();
+	await popover.locator( '[data-variant="rare-holo"]' ).hover();
 	await page.waitForTimeout( 150 );
-	check( '[editor] hover sets canvas preview', ( await wrap.getAttribute( 'data-holo-preview' ) ) === '1' );
+	check( '[editor] hover sets canvas preview (other family)', ( await blk.getAttribute( 'data-holo-preview' ) ) === '1' && ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-holo' ) );
 	await page.mouse.move( 10, 10 );
 	await page.waitForTimeout( 150 );
-	check( '[editor] leaving clears preview', ( await wrap.getAttribute( 'data-holo-preview' ) ) === null );
+	check( '[editor] leaving clears preview', ( await blk.getAttribute( 'data-holo-preview' ) ) === null && ! ( await blk.getAttribute( 'class' ) ).includes( 'is-style-holo-holo' ) );
+	// Arrow key → next effect applied; Escape → reverted to cosmos.
+	await popover.locator( '[data-variant="cosmos"]' ).focus();
+	await page.keyboard.press( 'ArrowRight' );
+	await page.waitForTimeout( 200 );
+	check( '[editor] arrow key picks the next effect', ( await blk.getAttribute( 'data-holo-variant' ) ) === 'rainbow-rare' );
 	await page.keyboard.press( 'Escape' );
+	await page.waitForTimeout( 300 );
+	check( '[editor] Escape reverts and closes', ( await blk.getAttribute( 'data-holo-variant' ) ) === 'cosmos' && ( await page.locator( '.holo-popover' ).count() ) === 0 );
+	// Shortcut ⇧⌥⌘H opens the popover for the selected block.
+	await blk.click();
+	await page.keyboard.press( process.platform === 'darwin' ? 'Shift+Alt+Meta+h' : 'Shift+Alt+Control+h' );
+	await page.waitForTimeout( 400 );
+	check( '[editor] ⇧⌥⌘H opens the popover', ( await page.locator( '.holo-popover .holo-picker' ).count() ) === 1 );
+	await page.keyboard.press( process.platform === 'darwin' ? 'Shift+Alt+Meta+h' : 'Shift+Alt+Control+h' );
+	await page.waitForTimeout( 300 );
+	check( '[editor] ⇧⌥⌘H again closes it', ( await page.locator( '.holo-popover' ).count() ) === 0 );
+	// Rounded corners: the wrapper copies the image radius.
+	const rounded = frame.locator( 'figure.is-style-rounded' ).first();
+	await rounded.scrollIntoViewIfNeeded();
 
 	// Block validity: no "This block contains unexpected or invalid content"
 	const invalid = await frame.locator( '.block-editor-warning' ).count();
