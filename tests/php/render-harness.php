@@ -65,12 +65,14 @@ $check( 'layers after img', strpos( $out, '<img' ) < strpos( $out, 'holo__shine'
 $check( 'marker removed', ! str_contains( $out, 'data-holo-marker' ) );
 $check( 'cosmos textures', substr_count( $out, '--tex-' ) === 3 && str_contains( $out, '--cosmosbg:123px 123px' ) );
 $check( 'interactive ns on card not figure', preg_match( '/<figure[^>]*data-wp-interactive/', $out ) === 0 && str_contains( $out, 'data-wp-interactive="holo-image-styles"' ) );
+$check( 'directives carry explicit namespace', str_contains( $out, 'data-wp-init="holo-image-styles::callbacks.init"' ) && str_contains( $out, 'data-wp-on-async--pointermove="holo-image-styles::actions.move"' ) );
 $check( 'enqueued family', Plugin::$enq === [ 'cosmos' ] );
 
 // 2. Lightbox markup (button after img, directives on figure).
 $in  = '<figure data-wp-context="{}" data-wp-interactive="core/image" class="wp-block-image size-large is-style-holo-holo wp-lightbox-container">' . $img . '<button class="lightbox-trigger" type="button" aria-haspopup="dialog" aria-label="Enlarge" data-wp-init="callbacks.initTriggerButton"><svg></svg></button></figure>';
 $out = $render->inject( $in, [ 'attrs' => [ 'className' => 'is-style-holo-holo', 'holo' => [ 'variant' => 'amazing-rare', 'intensity' => '2', 'tilt' => 0.5, 'touch' => 'off', 'window' => 1 ] ] ] );
 echo "2: $out\n";
+$check( 'card inherits core/image namespace when lightbox is on', str_contains( $out, '<div class="holo__card" data-holo-variant="' ) && preg_match( '/<div class="holo__card"[^>]*data-wp-interactive="core\/image"/', $out ) === 1 );
 $check( 'lightbox button inside card', strpos( $out, 'lightbox-trigger' ) < strpos( $out, 'holo__shine' ) && strpos( $out, 'lightbox-trigger' ) > strpos( $out, 'holo__card' ) );
 $check( 'variant kept (all) or fallback (free)', str_contains( $out, HOLO_EDITION === 'all' ? 'data-holo-variant="amazing-rare"' : 'data-holo-variant="rare-holo"' ) );
 $check( 'intensity clamped to 1.5', str_contains( $out, '--holo-intensity:1.5;' ) );

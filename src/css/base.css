@@ -23,7 +23,8 @@
 
 /* 2. Figure: perspective + palette. */
 .wp-block-image[class*="is-style-holo-"] {
-	perspective: 600px;
+	/* No `perspective` here: it would create a stacking context on the figure and let a following block
+	   cover a floated (alignleft/right) holo image. perspective() lives in the card transform instead. */
 	touch-action: pan-y;
 
 	--red: #f80e35;
@@ -96,7 +97,7 @@
 	border-radius: var(--holo-radius);
 	transform-style: preserve-3d;
 	isolation: isolate;
-	transform: translate3d(0, 0, 0.01px) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
+	transform: perspective(600px) translate3d(0, 0, 0.01px) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
 	transform-origin: center;
 	outline: 1px solid transparent; /* anti-alias trick from the original */
 

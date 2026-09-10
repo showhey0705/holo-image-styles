@@ -145,6 +145,15 @@ final class Render {
 		if ( ! $found ) {
 			return $content;
 		}
+		/*
+		 * Namespace of the interactive region. Core's lightbox puts data-wp-interactive="core/image" on the
+		 * figure and its directives (img / button) are written without a namespace prefix. A nested
+		 * data-wp-interactive changes the default namespace for everything below it, so the wrapper keeps
+		 * the figure's namespace when there is one; all of our own directives carry an explicit
+		 * "holo-image-styles::" prefix and work in either case.
+		 */
+		$figure_ns = $p->get_attribute( 'data-wp-interactive' );
+		$region_ns = is_string( $figure_ns ) && '' !== $figure_ns ? $figure_ns : self::INTERACTIVITY_NS;
 		$p->set_attribute( 'data-holo-marker', '1' );
 		$html = $p->get_updated_html();
 
@@ -171,12 +180,13 @@ final class Render {
 		$style = self::card_style( $family, $holo, $attrs );
 
 		$wrapper_open = sprintf(
-			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="callbacks.init" data-wp-on-async--pointermove="actions.move" data-wp-on-async--pointerleave="actions.leave" data-wp-on-async--pointerdown="actions.down">',
+			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="%7$s::callbacks.init" data-wp-on-async--pointermove="%7$s::actions.move" data-wp-on-async--pointerleave="%7$s::actions.leave" data-wp-on-async--pointerdown="%7$s::actions.down">',
 			esc_attr( $holo['variant'] ),
 			esc_attr( $holo['touch'] ),
 			$holo['showcase'] ? ' data-holo-showcase="1"' : '',
 			$holo['window'] ? ' data-holo-window="1"' : '',
 			esc_attr( $style ),
+			esc_attr( $region_ns ),
 			esc_attr( self::INTERACTIVITY_NS )
 		);
 		$layers = '<span class="holo__shine" aria-hidden="true"></span><span class="holo__glare" aria-hidden="true"></span>';

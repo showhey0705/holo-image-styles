@@ -20,7 +20,15 @@
 
 	position: relative;
 	isolation: isolate;
+	/* The block wrapper is full-width in the editor; shrink it to the image so the preview layers match. */
+	width: fit-content;
+	max-width: 100%;
 	transition: --pointer-x 0.6s ease, --pointer-y 0.6s ease, --background-x 0.6s ease, --background-y 0.6s ease;
+}
+
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"].alignwide,
+.editor-styles-wrapper .wp-block-image[class*="is-style-holo-"].alignfull {
+	width: auto;
 }
 
 .editor-styles-wrapper .wp-block-image[class*="is-style-holo-"]:hover {
