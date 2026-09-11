@@ -117,7 +117,7 @@ $check( 'bad radius rejected', ! str_contains( $out, '--holo-radius' ) );
 // 7. Showcase: true = defaults, object = per-image (clamped, whitelisted), enter flag, off.
 $fig = '<figure class="wp-block-image is-style-holo-glare"><img src="a.jpg" alt=""></figure>';
 $out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => true ] ] ] );
-$check( 'showcase true = defaults', str_contains( $out, ' data-holo-showcase="1" data-holo-sc-delay="1" data-holo-sc-duration="3" data-holo-sc-path="orbit" data-holo-sc-stagger="sequence"' ) && ! str_contains( $out, 'data-holo-enter' ) );
+$check( 'showcase true = defaults', str_contains( $out, ' data-holo-showcase="1" data-holo-sc-delay="0.25" data-holo-sc-duration="2" data-holo-sc-path="orbit" data-holo-sc-stagger="sequence"' ) && ! str_contains( $out, 'data-holo-enter' ) );
 $out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => [ 'delay' => '0', 'duration' => 9, 'path' => 'sweep', 'stagger' => 'nope', 'enter' => 1 ] ] ] ] );
 $check( 'showcase object clamped/whitelisted', str_contains( $out, 'data-holo-sc-delay="0" data-holo-sc-duration="5" data-holo-sc-path="sweep" data-holo-sc-stagger="sequence" data-holo-enter="1"' ) );
 $out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => [ 'path' => 'evil"><script>' ] ] ] ] );

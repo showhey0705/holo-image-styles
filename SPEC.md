@@ -737,14 +737,14 @@ Edge Function は `verify_jwt=false` でデプロイする: `supabase functions 
 
 | キー | 値 | 既定 | 意味 |
 |---|---|---|---|
-| `delay` | 0–3（秒） | 1 | 画面に入ってから始まるまで |
-| `duration` | 1–5（秒） | 3 | 動く長さ |
+| `delay` | 0–3（秒） | 0.25 | 画面に入ってから始まるまで |
+| `duration` | 1–5（秒） | 2 | 動く長さ |
 | `path` | `orbit` / `sweep` / `diagonal` | `orbit` | 一周（原作）/ 左→右に一回なでる / 斜めに一往復 |
 | `stagger` | `together` / `sequence` | `sequence` | 同時に画面に入ったカード（ギャラリーの行）を DOM 順に 250 ms ずつずらす |
 | `enter` | bool | false | 表示時にフェード＋浮き上がり（`[data-holo-enter="1"]` を CSS が初回ペイントから隠し、armed で `.is-holo-revealed`。JS が来なくても 4 秒後に CSS animation で自動表示。reduced-motion では無効） |
 
 - サーバー: `Render::sanitize_showcase()` が clamp／whitelist し、`data-holo-showcase="1" data-holo-sc-*` と `data-holo-enter` を出す（`Render::SHOWCASE_DEFAULTS` と JS の `SHOWCASE_DEFAULTS` を一致させる）。
 - フロント: `view/index.js` の `PATHS`（進行度 0–1 → ポインタ位置）を `performance.now()` ベースで 20 ms ごとに流す。順番点灯は IntersectionObserver の同一コールバック内で交差した要素を `compareDocumentPosition` で並べて index × 250 ms を足す。
-- エディタ: 「自動ショーケース」ON で下にプリセット（すぐ・短く／ゆっくり・長く／ギャラリー）＋ 開始までの間／長さ／軌道／複数枚が同時に出るとき／フェードイン。
+- エディタ: 「自動ショーケース」ON で下にプリセット（標準／ゆっくり／ギャラリー。4 つ目の「カスタム」が出ると ToggleGroup では日本語ラベルが折り返すのでセレクトにしてある）＋ 開始までの間／長さ／軌道／複数枚が同時に出るとき／フェードイン。既定は標準（0.25 秒後に 2 秒、一周、順番）。
 - 翻訳は `npm run i18n`（`bin/i18n.sh`。JSON は `md5("build/editor.js")` 名で出す）。
 

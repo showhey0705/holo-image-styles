@@ -17,6 +17,7 @@ import { InspectorControls, BlockControls } from '@wordpress/block-editor';
 import {
 	PanelBody,
 	RangeControl,
+	SelectControl,
 	ToggleControl,
 	Notice,
 	ExternalLink,
@@ -57,8 +58,8 @@ const DEFAULTS = {
 
 /* Showcase sub-attribute: false | true (defaults) | { delay, duration, path, stagger, enter }. Mirror Render::SHOWCASE_DEFAULTS. */
 const SHOWCASE_DEFAULTS = {
-	delay: 1,
-	duration: 3,
+	delay: 0.25,
+	duration: 2,
 	path: 'orbit',
 	stagger: 'sequence',
 	enter: false,
@@ -70,10 +71,11 @@ const showcaseOf = ( holo ) =>
 				...( typeof holo.showcase === 'object' ? holo.showcase : {} ),
 		  }
 		: null;
+/* "standard" is the default set, so switching the showcase on lands on a named preset, not "Custom". */
 const SHOWCASE_PRESETS = {
-	quick: { delay: 0, duration: 2, path: 'sweep', stagger: 'together' },
+	standard: { delay: 0.25, duration: 2, path: 'orbit', stagger: 'sequence' },
 	slow: { delay: 1, duration: 4, path: 'orbit', stagger: 'together' },
-	gallery: { delay: 0.5, duration: 2.5, path: 'sweep', stagger: 'sequence' },
+	gallery: { delay: 0.25, duration: 2, path: 'sweep', stagger: 'sequence' },
 };
 const showcasePresetOf = ( sc ) => {
 	for ( const [ key, p ] of Object.entries( SHOWCASE_PRESETS ) ) {
@@ -480,46 +482,52 @@ const HoloControls = ( { attributes, setAttributes, clientId } ) => {
 					/>
 					{ sc && (
 						<div className="holo-showcase">
-							<ToggleGroupControl
-								label={ __(
-									'Showcase preset',
-									'holo-image-styles'
-								) }
+							{ /* A select, not a toggle group: four options never fit on one line in ja. */ }
+							<SelectControl
+								label={ __( 'Preset', 'holo-image-styles' ) }
 								value={ showcasePresetOf( sc ) }
+								options={ [
+									{
+										value: 'standard',
+										label: __(
+											'Standard',
+											'holo-image-styles'
+										),
+									},
+									{
+										value: 'slow',
+										label: __(
+											'Slow',
+											'holo-image-styles'
+										),
+									},
+									{
+										value: 'gallery',
+										label: __(
+											'Gallery',
+											'holo-image-styles'
+										),
+									},
+									...( showcasePresetOf( sc ) === 'custom'
+										? [
+												{
+													value: 'custom',
+													label: __(
+														'Custom',
+														'holo-image-styles'
+													),
+												},
+										  ]
+										: [] ),
+								] }
 								onChange={ ( v ) => {
 									if ( SHOWCASE_PRESETS[ v ] ) {
 										updateShowcase( SHOWCASE_PRESETS[ v ] );
 									}
 								} }
-								isBlock
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-							>
-								<ToggleGroupControlOption
-									value="quick"
-									label={ __( 'Quick', 'holo-image-styles' ) }
-								/>
-								<ToggleGroupControlOption
-									value="slow"
-									label={ __( 'Slow', 'holo-image-styles' ) }
-								/>
-								<ToggleGroupControlOption
-									value="gallery"
-									label={ __(
-										'Gallery',
-										'holo-image-styles'
-									) }
-								/>
-								{ showcasePresetOf( sc ) === 'custom' && (
-									<ToggleGroupControlOption
-										value="custom"
-										label={ __(
-											'Custom',
-											'holo-image-styles'
-										) }
-									/>
-								) }
-							</ToggleGroupControl>
+							/>
 							<RangeControl
 								label={ __(
 									'Start after (seconds)',

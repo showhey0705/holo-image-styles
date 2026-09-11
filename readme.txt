@@ -4,7 +4,7 @@ Tags: image, block styles, holographic, effects, animation
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,16 +75,23 @@ When the visitor's system asks for reduced motion the plugin disables all moveme
 
 == Changelog ==
 
+= 1.1.1 =
+* Auto showcase now starts 0.25 s after the image appears and runs for 2 s (snappier default).
+* The showcase preset is a select instead of a button group, so its labels never wrap in translated interfaces.
+
 = 1.1.0 =
-* Auto showcase is configurable per image: start delay, length, path (orbit / sweep / diagonal), presets (Quick / Slow / Gallery).
+* Auto showcase is configurable per image: start delay, length, path (orbit / sweep / diagonal), presets (Standard / Slow / Gallery).
 * Images that scroll into view together (a gallery row) can light up one after another ("In sequence", the default).
 * Optional entrance: the image fades and rises in while the sweep runs (respects reduced motion; CSS safety net reveals it even if scripts fail).
-* Showcase runs 3 s by default (was 4 s).
+* Showcase starts 0.25 s after the image appears and runs for 2 s by default (was 1 s / 4 s).
 
 = 1.0.0 =
 * Initial release: 7 families (Holo, Cosmos, Rainbow, Foil, Metallic, Reverse, Glare), Interactivity API front end, reduced-motion support, thumbnail picker, click-to-lift, editor preview.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+Snappier default timing for the auto showcase and a tidier preset control.
 
 = 1.1.0 =
 Configurable auto showcase (timing, path, gallery sequence, fade-in). Existing "Auto showcase" settings keep working with the defaults.

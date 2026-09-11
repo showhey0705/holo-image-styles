@@ -117,8 +117,8 @@ const showcaseConfig = ( el ) => {
 		return Number.isFinite( n ) ? Math.min( max, Math.max( min, n ) ) : fb;
 	};
 	return {
-		delay: num( d.holoScDelay, 1, 0, 3 ) * 1000,
-		duration: num( d.holoScDuration, 3, 1, 5 ) * 1000,
+		delay: num( d.holoScDelay, 0.25, 0, 3 ) * 1000,
+		duration: num( d.holoScDuration, 2, 1, 5 ) * 1000,
 		path: [ 'orbit', 'sweep', 'diagonal' ].includes( d.holoScPath )
 			? d.holoScPath
 			: 'orbit',

@@ -101,8 +101,8 @@ final class Render {
 	 * @var array{delay:float,duration:float,path:string,stagger:string,enter:bool}
 	 */
 	public const SHOWCASE_DEFAULTS = [
-		'delay'    => 1.0,
-		'duration' => 3.0,
+		'delay'    => 0.25,
+		'duration' => 2.0,
 		'path'     => 'orbit',
 		'stagger'  => 'sequence',
 		'enter'    => false,

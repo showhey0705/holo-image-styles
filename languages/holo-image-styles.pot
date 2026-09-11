@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-11T00:54:48+00:00\n"
+"POT-Creation-Date: 2026-09-11T03:34:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: holo-image-styles\n"
@@ -48,194 +48,194 @@ msgstr ""
 msgid "View the changelog"
 msgstr ""
 
-#: src/editor/index.js:237
+#: src/editor/index.js:239
 msgid "Effect"
 msgstr ""
 
-#: src/editor/index.js:324
+#: src/editor/index.js:326
 msgid "Strength"
 msgstr ""
 
-#: src/editor/index.js:337
+#: src/editor/index.js:339
 msgid "Subtle"
 msgstr ""
 
-#: src/editor/index.js:341
+#: src/editor/index.js:343
 msgid "Normal"
 msgstr ""
 
-#: src/editor/index.js:345
+#: src/editor/index.js:347
 msgid "Bold"
 msgstr ""
 
-#: src/editor/index.js:350
-#: src/editor/index.js:516
+#: src/editor/index.js:352
+#: src/editor/index.js:515
 msgid "Custom"
 msgstr ""
 
-#: src/editor/index.js:363
+#: src/editor/index.js:365
 msgid "Hide details"
 msgstr ""
 
-#: src/editor/index.js:364
+#: src/editor/index.js:366
 msgid "Fine-tune…"
 msgstr ""
 
-#: src/editor/index.js:373
+#: src/editor/index.js:375
 msgid "Remove effect"
 msgstr ""
 
-#: src/editor/index.js:381
+#: src/editor/index.js:383
 msgid "Intensity"
 msgstr ""
 
-#: src/editor/index.js:393
+#: src/editor/index.js:395
 msgid "Tilt"
 msgstr ""
 
-#: src/editor/index.js:405
+#: src/editor/index.js:407
 msgid "Shadow"
 msgstr ""
 
-#: src/editor/index.js:414
+#: src/editor/index.js:416
 msgid "None"
 msgstr ""
 
-#: src/editor/index.js:418
+#: src/editor/index.js:420
 msgid "Soft"
 msgstr ""
 
-#: src/editor/index.js:422
+#: src/editor/index.js:424
 msgid "Glow"
 msgstr ""
 
-#: src/editor/index.js:426
+#: src/editor/index.js:428
 msgid "On click"
 msgstr ""
 
-#: src/editor/index.js:427
+#: src/editor/index.js:429
 msgid "Lift: the image floats up with the shine on; click again, click outside or press Esc to put it back. On touch devices this replaces the tap flash."
 msgstr ""
 
-#: src/editor/index.js:439
+#: src/editor/index.js:441
 msgid "Nothing"
 msgstr ""
 
-#: src/editor/index.js:443
+#: src/editor/index.js:445
 msgid "Lift"
 msgstr ""
 
-#: src/editor/index.js:447
+#: src/editor/index.js:449
 msgid "Touch devices"
 msgstr ""
 
-#: src/editor/index.js:456
+#: src/editor/index.js:458
 msgid "Tap"
 msgstr ""
 
-#: src/editor/index.js:460
+#: src/editor/index.js:462
 msgid "Glare"
 msgstr ""
 
-#: src/editor/index.js:464
+#: src/editor/index.js:466
 msgid "Off"
 msgstr ""
 
-#: src/editor/index.js:468
+#: src/editor/index.js:470
 msgid "Auto showcase"
 msgstr ""
 
-#: src/editor/index.js:469
+#: src/editor/index.js:471
 msgid "Plays a short sweep once when the image scrolls into view."
 msgstr ""
 
-#: src/editor/index.js:484
-msgid "Showcase preset"
+#: src/editor/index.js:487
+msgid "Preset"
 msgstr ""
 
-#: src/editor/index.js:500
-msgid "Quick"
+#: src/editor/index.js:492
+msgid "Standard"
 msgstr ""
 
-#: src/editor/index.js:504
+#: src/editor/index.js:499
 msgid "Slow"
 msgstr ""
 
-#: src/editor/index.js:508
+#: src/editor/index.js:506
 msgid "Gallery"
 msgstr ""
 
-#: src/editor/index.js:524
+#: src/editor/index.js:532
 msgid "Start after (seconds)"
 msgstr ""
 
-#: src/editor/index.js:539
+#: src/editor/index.js:547
 msgid "Length (seconds)"
 msgstr ""
 
-#: src/editor/index.js:554
+#: src/editor/index.js:562
 msgid "Path"
 msgstr ""
 
-#: src/editor/index.js:565
+#: src/editor/index.js:573
 msgid "Orbit"
 msgstr ""
 
-#: src/editor/index.js:569
+#: src/editor/index.js:577
 msgid "Sweep"
 msgstr ""
 
-#: src/editor/index.js:573
+#: src/editor/index.js:581
 msgid "Diagonal"
 msgstr ""
 
-#: src/editor/index.js:580
+#: src/editor/index.js:588
 msgid "Several images at once"
 msgstr ""
 
-#: src/editor/index.js:584
+#: src/editor/index.js:592
 msgid "In sequence: images that come into view together (a gallery row) light up one after another."
 msgstr ""
 
-#: src/editor/index.js:598
+#: src/editor/index.js:606
 msgid "Together"
 msgstr ""
 
-#: src/editor/index.js:605
+#: src/editor/index.js:613
 msgid "In sequence"
 msgstr ""
 
-#: src/editor/index.js:612
+#: src/editor/index.js:620
 msgid "Fade in with the sweep"
 msgstr ""
 
-#: src/editor/index.js:616
+#: src/editor/index.js:624
 msgid "The image rises and fades in as it comes into view. Ignored when the visitor prefers reduced motion."
 msgstr ""
 
-#: src/editor/index.js:633
+#: src/editor/index.js:641
 msgid "16 more effects are available in All Effects."
 msgstr ""
 
-#: src/editor/index.js:638
+#: src/editor/index.js:646
 msgid "Learn more"
 msgstr ""
 
-#: src/editor/index.js:658
+#: src/editor/index.js:666
 msgid "Open the Holo effect picker for the selected image."
 msgstr ""
 
 #. translators: %s: effect name.
-#: src/editor/index.js:749
+#: src/editor/index.js:757
 #, js-format
 msgid "\"%s\" is not included in this edition; the default effect of this family is used instead."
 msgstr ""
 
-#: src/editor/index.js:789
 #: src/editor/index.js:797
+#: src/editor/index.js:805
 msgid "Holo effect"
 msgstr ""
 
-#: src/editor/index.js:814
+#: src/editor/index.js:822
 msgid "← → choose · ⇧⌘⌫ remove"
 msgstr ""
