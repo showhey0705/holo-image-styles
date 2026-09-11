@@ -748,3 +748,51 @@ Edge Function は `verify_jwt=false` でデプロイする: `supabase functions 
 - エディタ: 「自動ショーケース」ON で下にプリセット（標準／ゆっくり／ギャラリー。4 つ目の「カスタム」が出ると ToggleGroup では日本語ラベルが折り返すのでセレクトにしてある）＋ 開始までの間／長さ／軌道／複数枚が同時に出るとき／フェードイン。既定は標準（0.25 秒後に 2 秒、一周、順番）。
 - 翻訳は `npm run i18n`（`bin/i18n.sh`。JSON は `md5("build/editor.js")` 名で出す）。
 
+
+## 付録 G. フェーズ 2 — All Effects の単体購入（$5 買い切り、2026-09-11）
+
+付録 E で「フェーズ 2 として保留」とした単体購入を実装した。**購読（Clinic 以上）に含まれる**という
+フェーズ 1 の形はそのままで、購読していない人が **買い切りでも同じ zip を買える**ようにする。
+BCP Builder 側の Supabase（`jhbzbqsondftxlcsevpn`）に手を入れており、Holo 側のプラグインコードは変更なし。
+
+### G.1 データ
+
+`public.purchases`（新規）。買い切り商品の台帳で、`licenses` とは別。
+
+| 列 | 用途 |
+|---|---|
+| `email` / `product` | 権利判定のキー。`product` は `download-url` の `FILES` キー（= `holo-image-styles-all`）と一致させる |
+| `stripe_session_id` | UNIQUE。Webhook の二重実行で行が増えないようにする |
+| `stripe_payment_intent_id` | 返金（`charge.refunded`）で引くためのキー |
+| `amount_total` / `currency` | 記録用 |
+| `is_active` | 返金・チャージバックで `false`。権利判定は `is_active` のみを見る |
+
+RLS 有効。`select` は本人（`auth.jwt() ->> 'email'`）のみ、書き込みは service role だけ。
+部分インデックス `purchases_email_product_idx on (lower(email), product) where is_active`。
+
+### G.2 Edge Functions
+
+| 関数 | 変更 |
+|---|---|
+| `_shared/products.ts`（新規） | 買い切り商品の一覧。`holo-image-styles-all` → `STRIPE_PRICE_HOLO_ALL`。Price ID が空なら「価格が未登録」として 409 |
+| `_shared/entitlement.ts`（新規） | `hasPurchased(supabase, email, product)` |
+| `create-checkout` | `{ product: "holo-image-styles-all" }` で **`mode: "payment"`** の Checkout を作る。`metadata.product` と `payment_intent_data.metadata.product` を付ける。成功時は `/account/?purchased=<slug>` に戻す。`{ plan }` の購読フローは従来どおり |
+| `stripe-webhook` | `checkout.session.completed` で price_id（または `metadata.product`）が `PRODUCTS` に当たれば、**ライセンスキーを発行せず** `purchases` に INSERT → Auth ユーザー作成 → `renderPurchaseEmail()` のメール送信。`charge.refunded` を新たに処理し、`payment_intent` 一致の購入を `is_active = false` にする |
+| `download-url` | `FILES` に `buyable: true` を追加。プランが足りないときだけ `hasPurchased()` を見て、あれば署名 URL を出す。403 のレスポンスに `buyable` を含めるので、アカウントページが「単体購入」ボタンを出せる |
+| `holo-update` / `holo-download` | 変更なし。自動更新は付録 E のとおり honor system なので、単体購入者にもそのまま更新が届く |
+
+### G.3 運営側で必要な操作
+
+1. Stripe で **一回払いの Price**（$5 / Holo Image Styles — All Effects）を作る。
+2. Supabase の Edge Function Secrets に `STRIPE_PRICE_HOLO_ALL=price_...` を登録する。
+3. Stripe の Webhook の送信イベントに **`charge.refunded`** を足す（`checkout.session.completed` は登録済み）。
+
+2 が未設定の間は `create-checkout` が 409「価格がまだ登録されていません」を返すだけで、
+既存の購読フローには影響しない。
+
+### G.4 アカウントページ
+
+`jadepro-account.php` の `downloads` 配列の `holo-image-styles-all` に `'buyable' => true` を足し、
+`download-url` が `403 + buyable:true` を返したときにボタンを「$5 で単体購入」に差し替えて
+`create-checkout`（`{ product: 'holo-image-styles-all', email: <ログイン中のメール> }`）を叩く。
+戻ってきた `url` に `location.href` で飛ばす。
