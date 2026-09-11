@@ -60,7 +60,7 @@ final class Render {
 	 *
 	 * @param mixed  $raw    Attribute value.
 	 * @param string $family Family slug.
-	 * @return array{variant:string,intensity:float,tilt:float,touch:string,glow:string,click:string,showcase:bool,window:bool}
+	 * @return array{variant:string,intensity:float,tilt:float,touch:string,glow:string,click:string,showcase:array{delay:float,duration:float,path:string,stagger:string,enter:bool}|false,window:bool}
 	 */
 	public static function sanitize_holo( $raw, string $family ): array {
 		$raw   = is_array( $raw ) ? $raw : [];
@@ -90,8 +90,52 @@ final class Render {
 			'touch'     => $touch,
 			'glow'      => $glow,
 			'click'     => $click,
-			'showcase'  => ! empty( $raw['showcase'] ),
+			'showcase'  => self::sanitize_showcase( $raw['showcase'] ?? false ),
 			'window'    => ! empty( $raw['window'] ),
+		];
+	}
+
+	/**
+	 * Showcase defaults (used when the attribute is `true` or a partial object). Mirror the JS SHOWCASE_DEFAULTS.
+	 *
+	 * @var array{delay:float,duration:float,path:string,stagger:string,enter:bool}
+	 */
+	public const SHOWCASE_DEFAULTS = [
+		'delay'    => 1.0,
+		'duration' => 3.0,
+		'path'     => 'orbit',
+		'stagger'  => 'sequence',
+		'enter'    => false,
+	];
+
+	/**
+	 * Sanitize the showcase sub-attribute: `false`/empty = off, `true` = defaults, object = per-image values.
+	 *
+	 * @param mixed $raw Attribute value.
+	 * @return array{delay:float,duration:float,path:string,stagger:string,enter:bool}|false
+	 */
+	public static function sanitize_showcase( $raw ) {
+		if ( empty( $raw ) ) {
+			return false;
+		}
+		$raw  = is_array( $raw ) ? $raw : [];
+		$num  = static function ( $v, float $fallback, float $min, float $max ): float {
+			return is_numeric( $v ) ? max( $min, min( $max, (float) $v ) ) : $fallback;
+		};
+		$path = isset( $raw['path'] ) && is_string( $raw['path'] ) ? $raw['path'] : self::SHOWCASE_DEFAULTS['path'];
+		if ( ! in_array( $path, [ 'orbit', 'sweep', 'diagonal' ], true ) ) {
+			$path = self::SHOWCASE_DEFAULTS['path'];
+		}
+		$stagger = isset( $raw['stagger'] ) && is_string( $raw['stagger'] ) ? $raw['stagger'] : self::SHOWCASE_DEFAULTS['stagger'];
+		if ( ! in_array( $stagger, [ 'together', 'sequence' ], true ) ) {
+			$stagger = self::SHOWCASE_DEFAULTS['stagger'];
+		}
+		return [
+			'delay'    => $num( $raw['delay'] ?? null, self::SHOWCASE_DEFAULTS['delay'], 0.0, 3.0 ),
+			'duration' => $num( $raw['duration'] ?? null, self::SHOWCASE_DEFAULTS['duration'], 1.0, 5.0 ),
+			'path'     => $path,
+			'stagger'  => $stagger,
+			'enter'    => ! empty( $raw['enter'] ),
 		];
 	}
 
@@ -99,7 +143,7 @@ final class Render {
 	 * Build the inline style for `.holo__card` (custom properties only).
 	 *
 	 * @param string                                                                              $family Family slug.
-	 * @param array{variant:string,intensity:float,tilt:float,touch:string,glow:string,click:string,showcase:bool,window:bool} $holo   Sanitized attribute.
+	 * @param array{variant:string,intensity:float,tilt:float,touch:string,glow:string,click:string,showcase:array{delay:float,duration:float,path:string,stagger:string,enter:bool}|false,window:bool} $holo   Sanitized attribute.
 	 * @param array<string,mixed>                                                                 $attrs  Block attributes (for border radius).
 	 * @param string                                                                              $img_src Rendered <img src> (for the alpha mask).
 	 */
@@ -204,7 +248,7 @@ final class Render {
 			'<div class="holo__card" data-holo-variant="%1$s" data-holo-touch="%2$s" data-holo-glow="%8$s" data-holo-click="%9$s"%3$s%4$s style="%5$s" data-wp-interactive="%6$s" data-wp-init="%7$s::callbacks.init" data-wp-on-async--pointermove="%7$s::actions.move" data-wp-on-async--pointerleave="%7$s::actions.leave" data-wp-on-async--pointerdown="%7$s::actions.down" data-wp-on-async--click="%7$s::actions.click">',
 			esc_attr( $holo['variant'] ),
 			esc_attr( $holo['touch'] ),
-			$holo['showcase'] ? ' data-holo-showcase="1"' : '',
+			self::showcase_attrs( $holo['showcase'] ),
 			$holo['window'] ? ' data-holo-window="1"' : '',
 			esc_attr( $style ),
 			esc_attr( $region_ns ),
@@ -220,6 +264,25 @@ final class Render {
 		Plugin::instance()->enqueue_front_assets( $family );
 
 		return $html;
+	}
+
+	/**
+	 * Showcase data attributes for the wrapper ('' when off). Read by view/index.js.
+	 *
+	 * @param array{delay:float,duration:float,path:string,stagger:string,enter:bool}|false $sc Sanitized showcase.
+	 */
+	private static function showcase_attrs( $sc ): string {
+		if ( false === $sc ) {
+			return '';
+		}
+		return sprintf(
+			' data-holo-showcase="1" data-holo-sc-delay="%s" data-holo-sc-duration="%s" data-holo-sc-path="%s" data-holo-sc-stagger="%s"%s',
+			esc_attr( self::fmt( $sc['delay'] ) ),
+			esc_attr( self::fmt( $sc['duration'] ) ),
+			esc_attr( $sc['path'] ),
+			esc_attr( $sc['stagger'] ),
+			$sc['enter'] ? ' data-holo-enter="1"' : ''
+		);
 	}
 
 	/**

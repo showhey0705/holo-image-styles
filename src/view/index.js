@@ -100,7 +100,51 @@ const unlift = ( el ) => {
 const unliftAll = () =>
 	document.querySelectorAll( '.holo__card.is-lifted' ).forEach( unlift );
 
-/* ---- showcase (optional, once, 3 s) ---- */
+/* ---- showcase (optional, once per page view) ----
+ * Per-image settings come from data attributes (see Render::showcase_attrs):
+ *   data-holo-sc-delay     seconds before it starts (0–3)
+ *   data-holo-sc-duration  seconds it runs (1–5)
+ *   data-holo-sc-path      orbit | sweep | diagonal
+ *   data-holo-sc-stagger   together | sequence  (sequence: cards entering the viewport together light up one after another)
+ *   data-holo-enter        "1": fade/rise in while the sweep runs
+ */
+const STAGGER_STEP = 250; // ms between cards in "sequence" mode
+
+const showcaseConfig = ( el ) => {
+	const d = el.dataset;
+	const num = ( v, fb, min, max ) => {
+		const n = parseFloat( v );
+		return Number.isFinite( n ) ? Math.min( max, Math.max( min, n ) ) : fb;
+	};
+	return {
+		delay: num( d.holoScDelay, 1, 0, 3 ) * 1000,
+		duration: num( d.holoScDuration, 3, 1, 5 ) * 1000,
+		path: [ 'orbit', 'sweep', 'diagonal' ].includes( d.holoScPath )
+			? d.holoScPath
+			: 'orbit',
+		sequence: d.holoScStagger !== 'together',
+	};
+};
+
+/* Pointer position (0–100) at progress t (0–1) for each path. */
+const PATHS = {
+	// ~2 laps around the card, like the original showcase.
+	orbit: ( t ) => {
+		const r = t * Math.PI * 4;
+		return { x: 50 + Math.sin( r ) * 45, y: 50 + Math.cos( r ) * 45 };
+	},
+	// One pass left → right across the upper part of the card, eased at both ends.
+	sweep: ( t ) => {
+		const e = 0.5 - Math.cos( Math.PI * t ) / 2;
+		return { x: 5 + 90 * e, y: 38 - Math.sin( Math.PI * t ) * 12 };
+	},
+	// Top-left → bottom-right and back.
+	diagonal: ( t ) => {
+		const u = Math.sin( Math.PI * t );
+		return { x: 12 + 76 * u, y: 12 + 76 * u };
+	},
+};
+
 const stopShowcase = ( el ) => {
 	if ( el._holoShowInterval ) {
 		clearInterval( el._holoShowInterval );
@@ -121,19 +165,49 @@ const startShowcase = ( el ) => {
 	) {
 		return;
 	}
+	const cfg = showcaseConfig( el );
+	const path = PATHS[ cfg.path ];
 	el._holoShown = true;
 	el.classList.add( 'is-interacting' );
-	let r = 0;
+	const t0 = performance.now();
 	el._holoShowInterval = setInterval( () => {
-		r += 0.08;
-		// Orbit the pointer around the card (sin/cos like the original showcase), ~2 laps in 3 s.
-		el._holoPending = {
-			x: 50 + Math.sin( r ) * 45,
-			y: 50 + Math.cos( r ) * 45,
-		};
+		const t = Math.min( 1, ( performance.now() - t0 ) / cfg.duration );
+		el._holoPending = path( t );
 		flush( el );
 	}, 20 );
-	el._holoShowEnd = setTimeout( () => rest( el ), 3000 );
+	el._holoShowEnd = setTimeout( () => rest( el ), cfg.duration );
+};
+
+/* Schedule the showcase after the per-image delay (+ stagger offset); cancelled when the card leaves the viewport. */
+const scheduleShowcase = ( el, extra = 0 ) => {
+	if (
+		el.dataset.holoShowcase !== '1' ||
+		el._holoShown ||
+		el._holoShowTimer
+	) {
+		return;
+	}
+	el._holoShowTimer = setTimeout(
+		() => {
+			el._holoShowTimer = null;
+			startShowcase( el );
+		},
+		showcaseConfig( el ).delay + extra
+	);
+};
+
+const unscheduleShowcase = ( el ) => {
+	if ( el._holoShowTimer ) {
+		clearTimeout( el._holoShowTimer );
+		el._holoShowTimer = null;
+	}
+};
+
+/* Entrance: CSS hides [data-holo-enter] cards from the first paint; adding .is-holo-revealed fades/rises them in. */
+const reveal = ( el ) => {
+	if ( el.dataset.holoEnter === '1' ) {
+		el.classList.add( 'is-holo-revealed' );
+	}
 };
 
 /* ---- IntersectionObserver: arm/disarm ---- */
@@ -141,24 +215,31 @@ let io;
 const observe = ( el ) => {
 	io ??= new IntersectionObserver(
 		( entries ) => {
-			for ( const e of entries ) {
+			// Cards entering together (a gallery row) light up one after another in "sequence" mode,
+			// in document order.
+			const sorted = [ ...entries ].sort( ( a, b ) =>
+				// eslint-disable-next-line no-bitwise -- compareDocumentPosition returns a bitmask.
+				a.target.compareDocumentPosition( b.target ) &
+				Node.DOCUMENT_POSITION_FOLLOWING
+					? -1
+					: 1
+			);
+			let seq = 0;
+			for ( const e of sorted ) {
 				e.target.classList.toggle( 'is-holo-armed', e.isIntersecting );
 				if ( e.isIntersecting ) {
-					if (
+					reveal( e.target );
+					const willRun =
 						e.target.dataset.holoShowcase === '1' &&
-						! e.target._holoShown &&
-						! e.target._holoShowTimer
-					) {
-						e.target._holoShowTimer = setTimeout( () => {
-							e.target._holoShowTimer = null;
-							startShowcase( e.target );
-						}, 1000 );
-					}
+						! e.target._holoShown;
+					const sequence =
+						e.target.dataset.holoScStagger !== 'together';
+					scheduleShowcase(
+						e.target,
+						willRun && sequence ? seq++ * STAGGER_STEP : 0
+					);
 				} else {
-					if ( e.target._holoShowTimer ) {
-						clearTimeout( e.target._holoShowTimer );
-						e.target._holoShowTimer = null;
-					}
+					unscheduleShowcase( e.target );
 					rest( e.target );
 				}
 			}
@@ -302,9 +383,8 @@ store( NS, {
 				observe( ref );
 			} else {
 				ref.classList.add( 'is-holo-armed' );
-				if ( ref.dataset.holoShowcase === '1' ) {
-					setTimeout( () => startShowcase( ref ), 1000 );
-				}
+				reveal( ref );
+				scheduleShowcase( ref );
 			}
 			// "glare" touch mode: a static sheen on touch-only devices, no tilt.
 			if (

@@ -55,6 +55,35 @@ const DEFAULTS = {
 	...( DATA.defaults || {} ),
 };
 
+/* Showcase sub-attribute: false | true (defaults) | { delay, duration, path, stagger, enter }. Mirror Render::SHOWCASE_DEFAULTS. */
+const SHOWCASE_DEFAULTS = {
+	delay: 1,
+	duration: 3,
+	path: 'orbit',
+	stagger: 'sequence',
+	enter: false,
+};
+const showcaseOf = ( holo ) =>
+	holo.showcase
+		? {
+				...SHOWCASE_DEFAULTS,
+				...( typeof holo.showcase === 'object' ? holo.showcase : {} ),
+		  }
+		: null;
+const SHOWCASE_PRESETS = {
+	quick: { delay: 0, duration: 2, path: 'sweep', stagger: 'together' },
+	slow: { delay: 1, duration: 4, path: 'orbit', stagger: 'together' },
+	gallery: { delay: 0.5, duration: 2.5, path: 'sweep', stagger: 'sequence' },
+};
+const showcasePresetOf = ( sc ) => {
+	for ( const [ key, p ] of Object.entries( SHOWCASE_PRESETS ) ) {
+		if ( Object.keys( p ).every( ( k ) => p[ k ] === sc[ k ] ) ) {
+			return key;
+		}
+	}
+	return 'custom';
+};
+
 const FAMILY_ORDER = Object.keys( DATA.families );
 const ALL_VARIANTS = Object.keys( DATA.variants );
 const SHORTCUT_NAME = 'holo-image-styles/toggle-picker';
@@ -259,6 +288,9 @@ const HoloControls = ( { attributes, setAttributes, clientId } ) => {
 	const hasHolo = !! variant;
 	const update = ( patch ) =>
 		setAttributes( { holo: { ...holo, ...patch } } );
+	const sc = showcaseOf( holo );
+	const updateShowcase = ( patch ) =>
+		update( { showcase: { ...( sc || SHOWCASE_DEFAULTS ), ...patch } } );
 	const [ advanced, setAdvanced ] = useState( presetOf( holo ) === 'custom' );
 	const preset = presetOf( holo );
 
@@ -435,13 +467,164 @@ const HoloControls = ( { attributes, setAttributes, clientId } ) => {
 					<ToggleControl
 						label={ __( 'Auto showcase', 'holo-image-styles' ) }
 						help={ __(
-							'Plays a short 3-second sweep once when the image scrolls into view.',
+							'Plays a short sweep once when the image scrolls into view.',
 							'holo-image-styles'
 						) }
-						checked={ !! holo.showcase }
-						onChange={ ( v ) => update( { showcase: !! v } ) }
+						checked={ !! sc }
+						onChange={ ( v ) =>
+							update( {
+								showcase: v ? { ...SHOWCASE_DEFAULTS } : false,
+							} )
+						}
 						__nextHasNoMarginBottom
 					/>
+					{ sc && (
+						<div className="holo-showcase">
+							<ToggleGroupControl
+								label={ __(
+									'Showcase preset',
+									'holo-image-styles'
+								) }
+								value={ showcasePresetOf( sc ) }
+								onChange={ ( v ) => {
+									if ( SHOWCASE_PRESETS[ v ] ) {
+										updateShowcase( SHOWCASE_PRESETS[ v ] );
+									}
+								} }
+								isBlock
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							>
+								<ToggleGroupControlOption
+									value="quick"
+									label={ __( 'Quick', 'holo-image-styles' ) }
+								/>
+								<ToggleGroupControlOption
+									value="slow"
+									label={ __( 'Slow', 'holo-image-styles' ) }
+								/>
+								<ToggleGroupControlOption
+									value="gallery"
+									label={ __(
+										'Gallery',
+										'holo-image-styles'
+									) }
+								/>
+								{ showcasePresetOf( sc ) === 'custom' && (
+									<ToggleGroupControlOption
+										value="custom"
+										label={ __(
+											'Custom',
+											'holo-image-styles'
+										) }
+									/>
+								) }
+							</ToggleGroupControl>
+							<RangeControl
+								label={ __(
+									'Start after (seconds)',
+									'holo-image-styles'
+								) }
+								value={ sc.delay }
+								onChange={ ( v ) =>
+									updateShowcase( { delay: v ?? 1 } )
+								}
+								min={ 0 }
+								max={ 3 }
+								step={ 0.25 }
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
+							<RangeControl
+								label={ __(
+									'Length (seconds)',
+									'holo-image-styles'
+								) }
+								value={ sc.duration }
+								onChange={ ( v ) =>
+									updateShowcase( { duration: v ?? 3 } )
+								}
+								min={ 1 }
+								max={ 5 }
+								step={ 0.5 }
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
+							<ToggleGroupControl
+								label={ __( 'Path', 'holo-image-styles' ) }
+								value={ sc.path }
+								onChange={ ( v ) =>
+									updateShowcase( { path: v } )
+								}
+								isBlock
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							>
+								<ToggleGroupControlOption
+									value="orbit"
+									label={ __( 'Orbit', 'holo-image-styles' ) }
+								/>
+								<ToggleGroupControlOption
+									value="sweep"
+									label={ __( 'Sweep', 'holo-image-styles' ) }
+								/>
+								<ToggleGroupControlOption
+									value="diagonal"
+									label={ __(
+										'Diagonal',
+										'holo-image-styles'
+									) }
+								/>
+							</ToggleGroupControl>
+							<ToggleGroupControl
+								label={ __(
+									'Several images at once',
+									'holo-image-styles'
+								) }
+								help={ __(
+									'In sequence: images that come into view together (a gallery row) light up one after another.',
+									'holo-image-styles'
+								) }
+								value={ sc.stagger }
+								onChange={ ( v ) =>
+									updateShowcase( { stagger: v } )
+								}
+								isBlock
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							>
+								<ToggleGroupControlOption
+									value="together"
+									label={ __(
+										'Together',
+										'holo-image-styles'
+									) }
+								/>
+								<ToggleGroupControlOption
+									value="sequence"
+									label={ __(
+										'In sequence',
+										'holo-image-styles'
+									) }
+								/>
+							</ToggleGroupControl>
+							<ToggleControl
+								label={ __(
+									'Fade in with the sweep',
+									'holo-image-styles'
+								) }
+								help={ __(
+									'The image rises and fades in as it comes into view. Ignored when the visitor prefers reduced motion.',
+									'holo-image-styles'
+								) }
+								checked={ !! sc.enter }
+								onChange={ ( v ) =>
+									updateShowcase( { enter: !! v } )
+								}
+								__nextHasNoMarginBottom
+							/>
+						</div>
+					) }
 					{ /* 'Card window' (holo.window) is kept as an attribute for trading-card images but no longer exposed here. */ }
 				</div>
 			) }

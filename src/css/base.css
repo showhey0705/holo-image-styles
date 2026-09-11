@@ -17,6 +17,8 @@
 @property --rotate-y { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
 @property --card-opacity { syntax: '<number>'; inherits: true; initial-value: 0; }
 @property --card-scale { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --holo-enter-y { syntax: '<length>'; inherits: true; initial-value: 0px; }
+@property --holo-enter-scale { syntax: '<number>'; inherits: true; initial-value: 1; }
 @property --pointer-from-center { syntax: '<number>'; inherits: true; initial-value: 0; }
 @property --pointer-from-top { syntax: '<number>'; inherits: true; initial-value: 0.5; }
 @property --pointer-from-left { syntax: '<number>'; inherits: true; initial-value: 0.5; }
@@ -75,6 +77,8 @@
 	--pointer-from-center: 0;
 	--pointer-from-top: 0.5;
 	--pointer-from-left: 0.5;
+	--holo-enter-y: 0px;
+	--holo-enter-scale: 1;
 
 	/* Texture slots, filled per variant by the server via the style attribute (SPEC §3.2/§4.4). */
 	--holo-mask: none; /* url(image) for formats with alpha: layers never paint over transparent pixels */
@@ -98,7 +102,7 @@
 	border-radius: var(--holo-radius);
 	transform-style: preserve-3d;
 	isolation: isolate;
-	transform: perspective(600px) translate3d(0, 0, 0.01px) scale(var(--card-scale)) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
+	transform: perspective(600px) translate3d(0, var(--holo-enter-y), 0.01px) scale(calc(var(--card-scale) * var(--holo-enter-scale))) rotateY(calc(var(--rotate-x) * var(--holo-tilt))) rotateX(calc(var(--rotate-y) * var(--holo-tilt)));
 	transform-origin: center;
 	outline: 1px solid transparent; /* anti-alias trick from the original */
 
@@ -133,6 +137,60 @@
 		--pointer-from-center 0.08s linear,
 		--pointer-from-top 0.08s linear,
 		--pointer-from-left 0.08s linear;
+}
+
+/* Entrance (showcase "enter"): hidden until the card is armed, then fades and rises in while the sweep runs. */
+.holo__card[data-holo-enter="1"] {
+	transition:
+		opacity 0.7s ease-out,
+		--holo-enter-y 0.9s var(--spring),
+		--holo-enter-scale 0.9s var(--spring),
+		--pointer-x 1.2s var(--spring),
+		--pointer-y 1.2s var(--spring),
+		--background-x 1.2s var(--spring),
+		--background-y 1.2s var(--spring),
+		--rotate-x 1.2s var(--spring),
+		--rotate-y 1.2s var(--spring),
+		--card-opacity 1.2s var(--spring),
+		--card-scale 0.6s var(--spring),
+		--pointer-from-center 1.2s var(--spring),
+		--pointer-from-top 1.2s var(--spring),
+		--pointer-from-left 1.2s var(--spring);
+}
+
+.holo__card[data-holo-enter="1"].is-interacting {
+	transition:
+		opacity 0.7s ease-out,
+		--holo-enter-y 0.9s var(--spring),
+		--holo-enter-scale 0.9s var(--spring),
+		--pointer-x 0.08s linear,
+		--pointer-y 0.08s linear,
+		--background-x 0.08s linear,
+		--background-y 0.08s linear,
+		--rotate-x 0.12s ease-out,
+		--rotate-y 0.12s ease-out,
+		--card-opacity 0.12s ease-out,
+		--card-scale 0.6s var(--spring),
+		--pointer-from-center 0.08s linear,
+		--pointer-from-top 0.08s linear,
+		--pointer-from-left 0.08s linear;
+}
+
+/* Hidden by CSS from the first paint (no flash); view/index.js adds .is-holo-revealed when the card is armed.
+   Safety net: if the script never runs, the card shows itself after 4 s. */
+.holo__card[data-holo-enter="1"]:not(.is-holo-revealed) {
+	opacity: 0;
+	--holo-enter-y: 16px;
+	--holo-enter-scale: 0.96;
+	animation: holo-enter-safety 0s 4s forwards;
+}
+
+@keyframes holo-enter-safety {
+	to {
+		opacity: 1;
+		--holo-enter-y: 0px;
+		--holo-enter-scale: 1;
+	}
 }
 
 /* click=lift: the card floats up until clicked again (view/index.js toggles .is-lifted). */
@@ -326,6 +384,13 @@
 
 	.holo__card.is-lifted {
 		--card-scale: 1;
+	}
+
+	.holo__card[data-holo-enter="1"]:not(.is-holo-revealed) {
+		opacity: 1;
+		--holo-enter-y: 0px;
+		--holo-enter-scale: 1;
+		animation: none;
 	}
 }
 

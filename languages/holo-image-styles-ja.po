@@ -13,189 +13,230 @@ msgstr ""
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: holo-image-styles\n"
 
-#. Plugin Name of the plugin
-#: holo-image-styles-all.php
-msgid "Holo Image Styles (All Effects)"
-msgstr "Holo Image Styles (All Effects)"
-
-#. Plugin URI of the plugin
-#: holo-image-styles-all.php
-msgid "https://github.com/showhey0705/holo-image-styles"
-msgstr ""
-
-#. Description of the plugin
-#: holo-image-styles-all.php
-msgid "Holographic card effects for the Image block. Inspired by pokemon-cards-css by Simon Goellner (GPL-3.0)."
-msgstr "画像ブロックにホログラムカードのエフェクトを追加します。Simon Goellner の pokemon-cards-css（GPL-3.0）をもとにしています。"
-
-#. Author of the plugin
-#: holo-image-styles-all.php
-msgid "Shohei"
-msgstr ""
-
-#. Author URI of the plugin
-#: holo-image-styles-all.php
-msgid "https://photoshopvip.net/"
-msgstr ""
-
-#: inc/class-edition.php:86
+#: src/php/class-edition.php:86
 msgid "Holo Image Styles (All Effects) is active."
 msgstr "Holo Image Styles (All Effects) が有効になりました。"
 
-#: inc/class-edition.php:87
+#: src/php/class-edition.php:87
 msgid "The free edition has been deactivated; the All Effects edition includes everything it had."
 msgstr "無料版は停止しました。All Effects 版には無料版のエフェクトがすべて含まれています。"
 
-#: inc/class-edition.php:96
+#: src/php/class-edition.php:96
 msgid "Delete the free edition"
 msgstr "無料版を削除"
 
-#: inc/class-edition.php:99
+#: src/php/class-edition.php:99
 msgid "Please delete \"Holo Image Styles\" (free edition) from the Plugins list."
 msgstr "プラグイン一覧から「Holo Image Styles」（無料版）を削除してください。"
 
-#: inc/class-edition.php:104
+#: src/php/class-edition.php:104
 msgid "Not now"
 msgstr "今回は削除しない"
 
-#: inc/class-edition.php:116
+#: src/php/class-edition.php:116
 msgid "You are not allowed to delete plugins."
 msgstr "プラグインを削除する権限がありません。"
 
-#: inc/class-edition.php:143
+#: src/php/class-edition.php:143
 msgid "You are not allowed to do that."
 msgstr "この操作を行う権限がありません。"
 
-#: inc/class-edition.php:251
+#: src/php/class-edition.php:251
 msgid "All 23 holographic effects for the Image block."
 msgstr "画像ブロック用のホログラムエフェクト全 23 種。"
 
-#: inc/class-edition.php:255
+#: src/php/class-edition.php:255
 msgid "View the changelog"
 msgstr "変更履歴を見る"
 
-#: build/editor.js:1
+#: src/editor/index.js:237
 msgid "Effect"
 msgstr "エフェクト"
 
-#: build/editor.js:1
+#: src/editor/index.js:324
 msgid "Strength"
 msgstr "強さ"
 
-#: build/editor.js:1
+#: src/editor/index.js:337
 msgid "Subtle"
 msgstr "控えめ"
 
-#: build/editor.js:1
+#: src/editor/index.js:341
 msgid "Normal"
 msgstr "標準"
 
-#: build/editor.js:1
+#: src/editor/index.js:345
 msgid "Bold"
 msgstr "派手"
 
-#: build/editor.js:1
+#: src/editor/index.js:350
+#: src/editor/index.js:516
 msgid "Custom"
 msgstr "カスタム"
 
-#: build/editor.js:1
+#: src/editor/index.js:363
 msgid "Hide details"
 msgstr "詳細を閉じる"
 
-#: build/editor.js:1
+#: src/editor/index.js:364
 msgid "Fine-tune…"
 msgstr "細かく調整…"
 
-#: build/editor.js:1
+#: src/editor/index.js:381
 msgid "Intensity"
 msgstr "強度"
 
-#: build/editor.js:1
+#: src/editor/index.js:393
 msgid "Tilt"
 msgstr "傾き"
 
-#: build/editor.js:1
+#: src/editor/index.js:447
 msgid "Touch devices"
 msgstr "タッチ端末"
 
-#: build/editor.js:1
+#: src/editor/index.js:456
 msgid "Tap"
 msgstr "タップ"
 
-#: build/editor.js:1
+#: src/editor/index.js:460
 msgid "Glare"
 msgstr "光沢のみ"
 
-#: build/editor.js:1
+#: src/editor/index.js:464
 msgid "Off"
 msgstr "オフ"
 
-#: build/editor.js:1
+#: src/editor/index.js:468
 msgid "Auto showcase"
 msgstr "自動ショーケース"
 
-#: build/editor.js:1
-msgid "Plays a short 3-second sweep once when the image scrolls into view."
-msgstr "画像が表示されたときに 3 秒間のスイープを 1 回だけ再生します。"
-
-#: build/editor.js:1
+#: src/editor/index.js:633
 msgid "16 more effects are available in All Effects."
 msgstr "All Effects 版では、さらに 16 種のエフェクトが使えます。"
 
-#: build/editor.js:1
+#: src/editor/index.js:638
 msgid "Learn more"
 msgstr "詳しく見る"
 
 #. translators: %s: effect name.
-#: build/editor.js:2
+#: src/editor/index.js:749
 #, js-format
 msgid "\"%s\" is not included in this edition; the default effect of this family is used instead."
 msgstr "「%s」はこのエディションに含まれないため、このファミリーの既定のエフェクトを使います。"
 
-#: build/editor.js:2
+#: src/editor/index.js:789
+#: src/editor/index.js:797
 msgid "Holo effect"
 msgstr "ホロ効果"
 
-#: build/editor.js:1
+#: src/editor/index.js:373
 msgid "Remove effect"
 msgstr "効果を外す"
 
-#: build/editor.js:1
+#: src/editor/index.js:405
 msgid "Shadow"
 msgstr "影"
 
-#: build/editor.js:1
+#: src/editor/index.js:414
 msgid "None"
 msgstr "なし"
 
-#: build/editor.js:1
+#: src/editor/index.js:418
 msgid "Soft"
 msgstr "なじませる"
 
-#: build/editor.js:1
+#: src/editor/index.js:422
 msgid "Glow"
 msgstr "光る"
 
-#: build/editor.js:1
+#: src/editor/index.js:658
 msgid "Open the Holo effect picker for the selected image."
 msgstr "選択中の画像のホロ効果ピッカーを開く"
 
-#: build/editor.js:2
+#: src/editor/index.js:814
 msgid "← → choose · ⇧⌘⌫ remove"
 msgstr "← → で選択 · ⇧⌘⌫ で外す"
 
-#: build/editor.js:1
+#: src/editor/index.js:426
 msgid "On click"
 msgstr "クリック時"
 
-#: build/editor.js:1
+#: src/editor/index.js:427
 msgid "Lift: the image floats up with the shine on; click again, click outside or press Esc to put it back. On touch devices this replaces the tap flash."
 msgstr "「持ち上げる」はクリックで画像が浮き上がり光沢が点灯します。もう一度クリック、外側クリック、Esc で戻ります。タッチ端末では「タップで点灯」の代わりになります。"
 
-#: build/editor.js:1
+#: src/editor/index.js:439
 msgid "Nothing"
 msgstr "なし"
 
-#: build/editor.js:1
+#: src/editor/index.js:443
 msgid "Lift"
 msgstr "持ち上げる"
+
+#: src/editor/index.js:469
+msgid "Plays a short sweep once when the image scrolls into view."
+msgstr "画像が表示されたときに短いスイープを 1 回だけ再生します。"
+
+#: src/editor/index.js:484
+msgid "Showcase preset"
+msgstr "ショーケースのプリセット"
+
+#: src/editor/index.js:500
+msgid "Quick"
+msgstr "すぐ・短く"
+
+#: src/editor/index.js:504
+msgid "Slow"
+msgstr "ゆっくり・長く"
+
+#: src/editor/index.js:508
+msgid "Gallery"
+msgstr "ギャラリー"
+
+#: src/editor/index.js:524
+msgid "Start after (seconds)"
+msgstr "開始までの間（秒）"
+
+#: src/editor/index.js:539
+msgid "Length (seconds)"
+msgstr "長さ（秒）"
+
+#: src/editor/index.js:554
+msgid "Path"
+msgstr "軌道"
+
+#: src/editor/index.js:565
+msgid "Orbit"
+msgstr "一周"
+
+#: src/editor/index.js:569
+msgid "Sweep"
+msgstr "なでる"
+
+#: src/editor/index.js:573
+msgid "Diagonal"
+msgstr "斜めに往復"
+
+#: src/editor/index.js:580
+msgid "Several images at once"
+msgstr "複数枚が同時に出るとき"
+
+#: src/editor/index.js:584
+msgid "In sequence: images that come into view together (a gallery row) light up one after another."
+msgstr "順番: 同時に画面に入った画像（ギャラリーの 1 行など）が 1 枚ずつ順に光ります。"
+
+#: src/editor/index.js:598
+msgid "Together"
+msgstr "同時"
+
+#: src/editor/index.js:605
+msgid "In sequence"
+msgstr "順番"
+
+#: src/editor/index.js:612
+msgid "Fade in with the sweep"
+msgstr "スイープと一緒にフェードイン"
+
+#: src/editor/index.js:616
+msgid "The image rises and fades in as it comes into view. Ignored when the visitor prefers reduced motion."
+msgstr "画面に入るときに画像が浮き上がりながら表示されます。「視差効果を減らす」設定では無効です。"

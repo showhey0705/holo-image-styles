@@ -1,7 +1,7 @@
 {
     "translation-revision-date": "YEAR-MO-DA HO:MI+ZONE",
     "generator": "WP-CLI\/2.12.0",
-    "source": "build\/editor.js",
+    "source": "src\/editor\/index.js",
     "domain": "messages",
     "locale_data": {
         "messages": {
@@ -55,9 +55,6 @@
             "Auto showcase": [
                 "\u81ea\u52d5\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9"
             ],
-            "Plays a short 3-second sweep once when the image scrolls into view.": [
-                "\u753b\u50cf\u304c\u8868\u793a\u3055\u308c\u305f\u3068\u304d\u306b 3 \u79d2\u9593\u306e\u30b9\u30a4\u30fc\u30d7\u3092 1 \u56de\u3060\u3051\u518d\u751f\u3057\u307e\u3059\u3002"
-            ],
             "16 more effects are available in All Effects.": [
                 "All Effects \u7248\u3067\u306f\u3001\u3055\u3089\u306b 16 \u7a2e\u306e\u30a8\u30d5\u30a7\u30af\u30c8\u304c\u4f7f\u3048\u307e\u3059\u3002"
             ],
@@ -102,6 +99,57 @@
             ],
             "Lift": [
                 "\u6301\u3061\u4e0a\u3052\u308b"
+            ],
+            "Plays a short sweep once when the image scrolls into view.": [
+                "\u753b\u50cf\u304c\u8868\u793a\u3055\u308c\u305f\u3068\u304d\u306b\u77ed\u3044\u30b9\u30a4\u30fc\u30d7\u3092 1 \u56de\u3060\u3051\u518d\u751f\u3057\u307e\u3059\u3002"
+            ],
+            "Showcase preset": [
+                "\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9\u306e\u30d7\u30ea\u30bb\u30c3\u30c8"
+            ],
+            "Quick": [
+                "\u3059\u3050\u30fb\u77ed\u304f"
+            ],
+            "Slow": [
+                "\u3086\u3063\u304f\u308a\u30fb\u9577\u304f"
+            ],
+            "Gallery": [
+                "\u30ae\u30e3\u30e9\u30ea\u30fc"
+            ],
+            "Start after (seconds)": [
+                "\u958b\u59cb\u307e\u3067\u306e\u9593\uff08\u79d2\uff09"
+            ],
+            "Length (seconds)": [
+                "\u9577\u3055\uff08\u79d2\uff09"
+            ],
+            "Path": [
+                "\u8ecc\u9053"
+            ],
+            "Orbit": [
+                "\u4e00\u5468"
+            ],
+            "Sweep": [
+                "\u306a\u3067\u308b"
+            ],
+            "Diagonal": [
+                "\u659c\u3081\u306b\u5f80\u5fa9"
+            ],
+            "Several images at once": [
+                "\u8907\u6570\u679a\u304c\u540c\u6642\u306b\u51fa\u308b\u3068\u304d"
+            ],
+            "In sequence: images that come into view together (a gallery row) light up one after another.": [
+                "\u9806\u756a: \u540c\u6642\u306b\u753b\u9762\u306b\u5165\u3063\u305f\u753b\u50cf\uff08\u30ae\u30e3\u30e9\u30ea\u30fc\u306e 1 \u884c\u306a\u3069\uff09\u304c 1 \u679a\u305a\u3064\u9806\u306b\u5149\u308a\u307e\u3059\u3002"
+            ],
+            "Together": [
+                "\u540c\u6642"
+            ],
+            "In sequence": [
+                "\u9806\u756a"
+            ],
+            "Fade in with the sweep": [
+                "\u30b9\u30a4\u30fc\u30d7\u3068\u4e00\u7dd2\u306b\u30d5\u30a7\u30fc\u30c9\u30a4\u30f3"
+            ],
+            "The image rises and fades in as it comes into view. Ignored when the visitor prefers reduced motion.": [
+                "\u753b\u9762\u306b\u5165\u308b\u3068\u304d\u306b\u753b\u50cf\u304c\u6d6e\u304d\u4e0a\u304c\u308a\u306a\u304c\u3089\u8868\u793a\u3055\u308c\u307e\u3059\u3002\u300c\u8996\u5dee\u52b9\u679c\u3092\u6e1b\u3089\u3059\u300d\u8a2d\u5b9a\u3067\u306f\u7121\u52b9\u3067\u3059\u3002"
             ]
         }
     }

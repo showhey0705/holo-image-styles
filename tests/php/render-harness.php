@@ -114,5 +114,16 @@ $check( 'radius 12px', str_contains( $out, '--holo-radius:12px;' ) );
 $out = $render->inject( '<figure class="wp-block-image is-style-holo-glare"><img src="a.jpg" alt=""></figure>', [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'style' => [ 'border' => [ 'radius' => '12px;color:red' ] ] ] ] );
 $check( 'bad radius rejected', ! str_contains( $out, '--holo-radius' ) );
 
+// 7. Showcase: true = defaults, object = per-image (clamped, whitelisted), enter flag, off.
+$fig = '<figure class="wp-block-image is-style-holo-glare"><img src="a.jpg" alt=""></figure>';
+$out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => true ] ] ] );
+$check( 'showcase true = defaults', str_contains( $out, ' data-holo-showcase="1" data-holo-sc-delay="1" data-holo-sc-duration="3" data-holo-sc-path="orbit" data-holo-sc-stagger="sequence"' ) && ! str_contains( $out, 'data-holo-enter' ) );
+$out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => [ 'delay' => '0', 'duration' => 9, 'path' => 'sweep', 'stagger' => 'nope', 'enter' => 1 ] ] ] ] );
+$check( 'showcase object clamped/whitelisted', str_contains( $out, 'data-holo-sc-delay="0" data-holo-sc-duration="5" data-holo-sc-path="sweep" data-holo-sc-stagger="sequence" data-holo-enter="1"' ) );
+$out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => [ 'path' => 'evil"><script>' ] ] ] ] );
+$check( 'showcase bad path falls back', str_contains( $out, 'data-holo-sc-path="orbit"' ) && ! str_contains( $out, '<script>' ) );
+$out = $render->inject( $fig, [ 'attrs' => [ 'className' => 'is-style-holo-glare', 'holo' => [ 'showcase' => false ] ] ] );
+$check( 'showcase off', ! str_contains( $out, 'data-holo-showcase' ) );
+
 echo $fail ? "\n$fail FAILED\n" : "\nALL OK\n";
 exit( $fail ? 1 : 0 );
