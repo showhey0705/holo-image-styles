@@ -68,10 +68,10 @@ When the visitor's system asks for reduced motion the plugin disables all moveme
 
 == Screenshots ==
 
-1. The seven styles in the Styles panel.
-2. The "Holo effect" panel.
-3. A Cosmos image on the front end while hovering.
-4. Reduced-motion rendering (static sheen, no tilt).
+1. A Cosmos image on the front end, tilting and catching the light under the pointer.
+2. Four styles side by side — Prism, Aurora, Ember and Quartz — in an ordinary image row.
+3. The "Holo effect" panel in the block editor: pick a look from the thumbnails.
+4. Fine-tune the same image — intensity, tilt, shadow, click and touch behaviour, auto showcase.
 
 == Changelog ==
 
