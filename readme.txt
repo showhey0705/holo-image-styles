@@ -44,9 +44,10 @@ This free plugin ships the default effect of each family (7 effects). An "All Ef
 = Fanned deck on phones =
 
 Put `holo-fan` in the **Advanced -> Additional CSS class(es)** box of a Columns block that holds
-exactly three holo images. On narrow screens the three cards stop stacking vertically and overlap
-in one place like a hand of cards, the middle one in front. Touching a card brings it forward and
-shows the text below it. Any other number of columns is left alone.
+three or four holo images. On narrow screens the cards stop stacking vertically and overlap in one
+place like a hand of cards. Touching a card brings it in front and shows the text below it; the
+card itself does not move, so the pointer never slips off it. Columns blocks with any other number
+of columns are left alone.
 
 == Installation ==
 
