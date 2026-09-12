@@ -45,9 +45,13 @@ This free plugin ships the default effect of each family (7 effects). An "All Ef
 
 Put `holo-fan` in the **Advanced -> Additional CSS class(es)** box of a Columns block that holds
 three or four holo images. On narrow screens the cards stop stacking vertically and overlap in one
-place like a hand of cards. Touching a card brings it in front and shows the text below it; the
-card itself does not move, so the pointer never slips off it. Columns blocks with any other number
-of columns are left alone.
+place like a hand of cards. Touching a card brings it in front, fans the other cards further out so
+more of them shows, and reveals the text below it; the touched card itself never moves, so the
+pointer cannot slip off it. Columns blocks with any other number of columns are left alone.
+
+Set **On click** to *Lift* on those images as well. A tap then pins that card in front and pushes
+the others back, so a reader can go through the whole hand one card at a time (tapping outside or
+pressing Esc puts it back).
 
 == Installation ==
 

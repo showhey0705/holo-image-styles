@@ -433,6 +433,9 @@
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column {
 		grid-column: 1;
 		grid-row: 1;
+
+		/* 逃げる動きだけなめらかに。触っているカードは transform が変わらないので影響しない。 */
+		transition: transform 0.28s ease;
 	}
 
 	/* ---- 3 枚: 中央がいちばん手前 ---- */
@@ -486,6 +489,34 @@
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ),
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) {
 		z-index: 5;
+	}
+
+
+	/* ---- どれかに触っているとき、触っていないカードだけ外へ逃げる ----
+	   動かすのは「触っていないカード」だけ。触っているカードを動かすと
+	   ポインタの下から逃げてちらつくので、そこは絶対に動かさない。 */
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 1 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
+		transform: translateZ(0.1px) translateX(-35%) rotate(-9deg);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 3 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
+		transform: translateZ(0.1px) translateX(35%) rotate(9deg);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 1 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
+		transform: translateZ(0.1px) translateX(-47%) rotate(-11deg);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 2 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
+		transform: translateZ(0.2px) translateX(-17%) rotate(-4deg);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 3 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
+		transform: translateZ(0.3px) translateX(17%) rotate(4deg);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 4 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
+		transform: translateZ(0.1px) translateX(47%) rotate(11deg);
 	}
 
 	/* ---- カードの下の文字は、触っているカードのぶんだけ見せる ----
