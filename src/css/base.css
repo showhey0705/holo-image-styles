@@ -409,14 +409,27 @@
 /* 9. `.holo-fan` — 3〜4 枚並べたカラムを、狭い画面では 1 か所に重ねて扇状に見せる。
  *
  * 使い方: カラムブロック（カラム 3 つか 4 つ、中に holo 画像）の「追加 CSS クラス」に
- * holo-fan と書く。カラムがそれ以外の数なら何もしない（WordPress 既定の縦積みのまま）。
+ * holo-fan と書く。あわせて画像の「クリック時の動作」を「前に出す」にしておくと、
+ * タップしたカードが前に固定され、手札を 1 枚ずつ見ていける。
+ * カラムがそれ以外の数なら何もしない（WordPress 既定の縦積みのまま）。
  *
- * 仕組みは pokemon-cards-css のデモと同じで、グリッドを 1 セルにして重ね、
- * `transform-style: preserve-3d` と `translateZ()` で 3D の重なり争いを避ける。
- * 扇のずらしはカラムに、傾きは中の `.holo__card` にかかるので、2 つの transform は競合しない。
+ * 仕組みは pokemon-cards-css のデモと同じで、グリッドを 1 セル（`grid-column: 1; grid-row: 1`）
+ * にして重ねる。扇のずらしはカラムに、傾きは中の `.holo__card` にかかるので競合しない。
+ * 原作は `transform-style: preserve-3d` を使っているが、ここでは使わない。3D の文脈に入ると
+ * 前後が z-index ではなく Z 座標で決まってしまい、タップしたカードを前に出せなくなる。
+ * カード自身の傾きは `.holo__card` の `perspective()` が持つので、親に 3D は要らない。
  *
- * 重要: 触っているカードの transform は動かさない。動かすとカードがポインタの下から
- * 逃げてしまい、離れる → 戻る → また触れる の往復でちらつく。前に出すのは z-index だけ。 */
+ * 位置は `--fan-x` / `--fan-r` に持たせ、開いたときだけ `--fan-x-open` / `--fan-r-open` に
+ * 差し替える。こうすると「開く」の切り替えがカラムの枚数ぶんではなく 1 組で済む。
+ *
+ * つまずいた点を 2 つ残しておく。
+ * 1. 前に出ているカードの transform は動かさない。動かすとカードがポインタの下から逃げて、
+ *    離れる → 戻る → また触れる の往復でちらつく（2026-09-12）。
+ * 2. 前後は `is-lifted`（タップで固定）を `is-interacting`（触っている）より強くする。
+ *    同じ z-index だと DOM 順で決まり、後ろのカードをタップしても前に出ない（2026-09-12）。
+ *    上書き側のセレクタは枚数の判定を含めて、nth-child の指定より詳細度を高く保つこと。
+ * 3. 親に `transform-style: preserve-3d` を付けると z-index が無視される（2026-09-12）。
+ *    「タップしても拡大するだけで前に出ない」の原因はこれだった。 */
 @media (max-width: 781px) {
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ),
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) {
@@ -425,111 +438,128 @@
 		gap: 0;
 		justify-items: center;
 		padding-block: 14px;
-		transform-style: preserve-3d;
 	}
 
-	/* 同じセルに重ねる。縦位置はそろえる（下の文字が他のカードに重ならないように）。 */
+	.holo-fan .wp-block-column {
+		--fan-x: 0%;
+		--fan-r: 0deg;
+	}
+
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column,
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column {
 		grid-column: 1;
 		grid-row: 1;
-
-		/* 逃げる動きだけなめらかに。触っているカードは transform が変わらないので影響しない。 */
+		transform: translateX(var(--fan-x)) rotate(var(--fan-r));
 		transition: transform 0.28s ease;
 	}
 
-	/* ---- 3 枚: 中央がいちばん手前 ---- */
+	/* ---- 3 枚: 中央が最前面 ---- */
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column {
 		width: 52%;
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:nth-child( 1 ) {
+		--fan-x: -30%;
+		--fan-r: -7deg;
+		--fan-x-open: -35%;
+		--fan-r-open: -9deg;
+
 		z-index: 2;
-		transform: translateZ(0.1px) translateX(-30%) rotate(-7deg);
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:nth-child( 2 ) {
+
 		z-index: 3;
-		transform: translateZ(0.2px);
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:nth-child( 3 ) {
+		--fan-x: 30%;
+		--fan-r: 7deg;
+		--fan-x-open: 35%;
+		--fan-r-open: 9deg;
+
 		z-index: 1;
-		transform: translateZ(0.1px) translateX(30%) rotate(7deg);
 	}
 
-	/* ---- 4 枚: 内側 2 枚が手前。左から 2 番目より 3 番目をさらに前に ---- */
+	/* ---- 4 枚: 内側 2 枚が手前（左から 3 番目が最前面） ---- */
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column {
 		width: 46%;
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:nth-child( 1 ) {
+		--fan-x: -42%;
+		--fan-r: -9.5deg;
+		--fan-x-open: -47%;
+		--fan-r-open: -11deg;
+
 		z-index: 1;
-		transform: translateZ(0.1px) translateX(-42%) rotate(-9.5deg);
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:nth-child( 2 ) {
+		--fan-x: -14%;
+		--fan-r: -3.2deg;
+		--fan-x-open: -17%;
+		--fan-r-open: -4deg;
+
 		z-index: 3;
-		transform: translateZ(0.2px) translateX(-14%) rotate(-3.2deg);
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:nth-child( 3 ) {
+		--fan-x: 14%;
+		--fan-r: 3.2deg;
+		--fan-x-open: 17%;
+		--fan-r-open: 4deg;
+
 		z-index: 4;
-		transform: translateZ(0.3px) translateX(14%) rotate(3.2deg);
 	}
 
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:nth-child( 4 ) {
+		--fan-x: 42%;
+		--fan-r: 9.5deg;
+		--fan-x-open: 47%;
+		--fan-r-open: 11deg;
+
 		z-index: 2;
-		transform: translateZ(0.1px) translateX(42%) rotate(9.5deg);
 	}
 
-	/* ---- 触っているカード: 位置は動かさず、前に出すだけ ---- */
+	/* ---- 前後: タップで固定(is-lifted) が、触っている(is-interacting) より強い ---- */
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ),
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ),
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ),
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) {
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ) {
 		z-index: 5;
 	}
 
-
-	/* ---- どれかに触っているとき、触っていないカードだけ外へ逃げる ----
-	   動かすのは「触っていないカード」だけ。触っているカードを動かすと
-	   ポインタの下から逃げてちらつくので、そこは絶対に動かさない。 */
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 1 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
-		transform: translateZ(0.1px) translateX(-35%) rotate(-9deg);
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ),
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) {
+		z-index: 6;
 	}
 
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 3 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
-		transform: translateZ(0.1px) translateX(35%) rotate(9deg);
+	/* ---- 前に出ていないカードだけ外へ開く ----
+	   lift があるときは lift が主役、無いときは触っているカードが主役。
+	   動かすのは主役以外だけなので、上の 1 のちらつきは起きない。 */
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):has( .holo__card.is-lifted ) > .wp-block-column:not( :has( .holo__card.is-lifted ) ),
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-lifted ) > .wp-block-column:not( :has( .holo__card.is-lifted ) ),
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):not( :has( .holo__card.is-lifted ) ):has( .holo__card.is-interacting ) > .wp-block-column:not( :has( .holo__card.is-interacting ) ),
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):not( :has( .holo__card.is-lifted ) ):has( .holo__card.is-interacting ) > .wp-block-column:not( :has( .holo__card.is-interacting ) ) {
+		--fan-x: var(--fan-x-open, 0%);
+		--fan-r: var(--fan-r-open, 0deg);
 	}
 
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 1 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
-		transform: translateZ(0.1px) translateX(-47%) rotate(-11deg);
-	}
-
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 2 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
-		transform: translateZ(0.2px) translateX(-17%) rotate(-4deg);
-	}
-
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 3 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
-		transform: translateZ(0.3px) translateX(17%) rotate(4deg);
-	}
-
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):has( .holo__card.is-interacting, .holo__card.is-lifted ) > .wp-block-column:nth-child( 4 ):not( :has( .holo__card.is-interacting, .holo__card.is-lifted ) ) {
-		transform: translateZ(0.1px) translateX(47%) rotate(11deg);
-	}
-
-	/* ---- カードの下の文字は、触っているカードのぶんだけ見せる ----
+	/* ---- カードの下の文字は、主役のカードのぶんだけ ----
 	   場所は空けたままにして、出入りで行送りが動かないようにする。 */
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column p,
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column p {
 		opacity: 0;
 		transition: opacity 0.2s ease;
+
+		/* カードは transform を持つので、そのままだと下の文字より上に描かれる
+		   （前に出したカードは拡大するので文字に被る）。文字も重なりの列に上げる。 */
+		position: relative;
+		z-index: 1;
 	}
 
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ) p,
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):not( :has( .holo__card.is-lifted ) ) > .wp-block-column:has( .holo__card.is-interacting ) p,
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ):not( :has( .holo__card.is-lifted ) ) > .wp-block-column:has( .holo__card.is-interacting ) p,
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) p,
-	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ) p,
 	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 4 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) p {
 		opacity: 1;
 	}
