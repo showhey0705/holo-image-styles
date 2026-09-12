@@ -796,3 +796,21 @@ RLS 有効。`select` は本人（`auth.jwt() ->> 'email'`）のみ、書き込�
 `download-url` が `403 + buyable:true` を返したときにボタンを「$5 で単体購入」に差し替えて
 `create-checkout`（`{ product: 'holo-image-styles-all', email: <ログイン中のメール> }`）を叩く。
 戻ってきた `url` に `location.href` で飛ばす。
+
+## 付録 H. `.holo-fan` — スマートフォンで 3 枚を扇状に重ねる（2026-09-12）
+
+3 枚並べたカラムブロックの「追加 CSS クラス」に `holo-fan` と書くと、781px 以下で
+3 枚が縦積みをやめて 1 か所に重なり、トランプの手札のように広がる。中央が最前面。
+
+- 実装は `src/css/base.css` の 9 節。CSS だけで、JS もブロックも増えない。
+- グリッドを 1 セル（`grid-column: 1; grid-row: 1`）にして 3 枚を同じ場所へ置き、
+  `transform-style: preserve-3d` と各カラムの `translateZ()` で 3D の重なり争いを避ける。
+  原作 pokemon-cards-css のデモと同じ考え方。
+- **扇のずらしはカラムに、傾きは `.holo__card` に**かかるので、2 つの transform は競合しない。
+- 手前に出るのは `.holo__card.is-interacting` / `.is-lifted` を含むカラム（`:has()` で拾う）。
+  同時にそのカラムの `p` を表示し、他は `opacity: 0` のまま場所だけ残す（出入りで行送りが動かない）。
+  どれも触っていないときは中央のぶんを出しておく。
+- カラムが 3 つ以外のときは `:has( > .wp-block-column:nth-child(3):last-child )` に当たらないので
+  WordPress 既定の縦積みのまま。23 種一覧のようにファミリーごとで枚数が違う並びには付けない。
+- 数値: カラム幅 52%、左右へ ±30%、回転 ∓7 度、コンテナに `padding-block: 14px`。
+  430px 幅で左右 28px 残る（回転で膨らむぶんを含む）。

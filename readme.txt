@@ -41,6 +41,13 @@ This free plugin ships the default effect of each family (7 effects). An "All Ef
 * Older browsers without `@property` support still show the effect; only the spring-back transition is skipped.
 * Source code (unminified JS/CSS, build scripts): https://github.com/showhey0705/holo-image-styles
 
+= Fanned deck on phones =
+
+Put `holo-fan` in the **Advanced -> Additional CSS class(es)** box of a Columns block that holds
+exactly three holo images. On narrow screens the three cards stop stacking vertically and overlap
+in one place like a hand of cards, the middle one in front. Touching a card brings it forward and
+shows the text below it. Any other number of columns is left alone.
+
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/` or install it from the Plugins screen.

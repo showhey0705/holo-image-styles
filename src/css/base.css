@@ -405,3 +405,76 @@
 		content: none;
 	}
 }
+
+/* 9. `.holo-fan` — 3 枚並べたカラムを、狭い画面では 1 か所に重ねて扇状に見せる。
+ *
+ * 使い方: カラムブロック（カラム 3 つ、中に holo 画像）の「追加 CSS クラス」に holo-fan と書く。
+ * カラムが 3 つでないときは何もしない（WordPress 既定の縦積みのまま）。
+ *
+ * 仕組みは pokemon-cards-css のデモと同じで、グリッドを 1 セルにして 3 枚を同じ場所へ置き、
+ * `transform-style: preserve-3d` と `translateZ()` で 3D の重なり争いを避ける。
+ * 扇のずらしはカラムに、傾きは中の `.holo__card` にかかるので、2 つの transform は競合しない。
+ * 手前に出るのは触っているカード（`.is-interacting` / `.is-lifted` は view/index.js が付ける）。 */
+@media (max-width: 781px) {
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0;
+		justify-items: center;
+		padding-block: 14px;
+		transform-style: preserve-3d;
+	}
+
+	/* 3 枚を同じセルに重ねる。縦位置はそろえる（下のキャプションが他のカードに重ならないように）。 */
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column {
+		grid-column: 1;
+		grid-row: 1;
+		width: 52%;
+		transition: transform 0.25s ease;
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:nth-child( 1 ) {
+		z-index: 2;
+		transform: translateZ(0.1px) translateX(-30%) rotate(-7deg);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:nth-child( 2 ) {
+		z-index: 3;
+		transform: translateZ(0.2px);
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:nth-child( 3 ) {
+		z-index: 1;
+		transform: translateZ(0.1px) translateX(30%) rotate(7deg);
+	}
+
+	/* 触っているカードを最前面へ、少しだけ起こす。 */
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ),
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) {
+		z-index: 4;
+		transform: translateZ(0.3px) rotate(0deg);
+	}
+
+	/* カードの下の文字は、触っているカードのぶんだけ見せる。
+	   場所は空けたままにして、出入りでレイアウトが動かないようにする。 */
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column p {
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-interacting ) p,
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ) > .wp-block-column:has( .holo__card.is-lifted ) p {
+		opacity: 1;
+	}
+
+	/* どれも触っていないときは、いちばん手前（中央）のぶんを出しておく。 */
+	.holo-fan.wp-block-columns:has( > .wp-block-column:nth-child( 3 ):last-child ):not( :has( .holo__card.is-interacting ) ):not( :has( .holo__card.is-lifted ) ) > .wp-block-column:nth-child( 2 ) p {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.holo-fan .wp-block-column {
+		transition: none;
+	}
+}
