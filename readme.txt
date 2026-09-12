@@ -4,7 +4,7 @@ Tags: image, block styles, holographic, effects, animation
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -87,6 +87,12 @@ When the visitor's system asks for reduced motion the plugin disables all moveme
 
 == Changelog ==
 
+= 1.2.0 =
+* Fanned deck on phones: add the class `holo-fan` to a Columns block of three or four holo images and, at 781 px and below, the cards stack into a hand of cards. Touch one and it comes forward while the others slide out, so every card stays visible.
+* The fan needs each image set to **On click -> Lift**, which also keeps the tapped card in front until you tap elsewhere.
+* Fixed the flicker that happened when the pointer entered a fanned card on a narrow desktop window (the touched card no longer moves out from under the pointer).
+* WordPress.org assets: banner, icon and four screenshots.
+
 = 1.1.1 =
 * Auto showcase now starts 0.25 s after the image appears and runs for 2 s (snappier default).
 * The showcase preset is a select instead of a button group, so its labels never wrap in translated interfaces.
@@ -101,6 +107,9 @@ When the visitor's system asks for reduced motion the plugin disables all moveme
 * Initial release: 7 families (Holo, Cosmos, Rainbow, Foil, Metallic, Reverse, Glare), Interactivity API front end, reduced-motion support, thumbnail picker, click-to-lift, editor preview.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+New: the `holo-fan` class fans three or four columns of holo images into a hand of cards on phones. Nothing changes for existing images.
 
 = 1.1.1 =
 Snappier default timing for the auto showcase and a tidier preset control.
