@@ -4,7 +4,7 @@ Tags: image, block styles, holographic, effects, animation
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -86,6 +86,10 @@ When the visitor's system asks for reduced motion the plugin disables all moveme
 4. Fine-tune the same image — intensity, tilt, shadow, click and touch behaviour, auto showcase.
 
 == Changelog ==
+
+= 1.2.1 =
+* "Check for updates" link in the plugin list (next to "View details"): fetches the update information right away and says above the list whether a new version is available or you are up to date.
+* Fixed: a new release could take up to 12 hours to show up. Dashboard -> Updates -> "Check again", and activating or deleting a plugin, now refetch the update information too.
 
 = 1.2.0 =
 * Fanned deck on phones: add the class `holo-fan` to a Columns block of three or four holo images and, at 781 px and below, the cards stack into a hand of cards. Touch one and it comes forward while the others slide out, so every card stays visible.
