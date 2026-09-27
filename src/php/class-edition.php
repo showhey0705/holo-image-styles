@@ -207,7 +207,7 @@ final class Edition {
 		$this->flush();
 		delete_site_transient( 'update_plugins' );
 		if ( ! function_exists( 'wp_update_plugins' ) ) {
-			require_once ABSPATH . WPINC . '/update.php';
+			require_once ABSPATH . 'wp-includes/update.php';
 		}
 		wp_update_plugins();
 		$json  = $this->fetch_update_json();
