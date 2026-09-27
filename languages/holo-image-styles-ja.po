@@ -240,3 +240,23 @@ msgstr "プリセット"
 #: src/editor/index.js:492
 msgid "Standard"
 msgstr "標準"
+
+#: src/php/class-edition.php
+msgid "Check for updates"
+msgstr "更新を確認"
+
+#: src/php/class-edition.php
+msgid "You are not allowed to update plugins."
+msgstr "この操作を行う権限がありません。"
+
+#: src/php/class-edition.php
+msgid "%1$s %2$s is available. Use \"Update now\" in the list to install it."
+msgstr "%1$s の新しい版（%2$s）があります。一覧の「今すぐ更新」から更新できます。"
+
+#: src/php/class-edition.php
+msgid "%1$s is up to date (%2$s)."
+msgstr "%1$s は最新版です（%2$s）。"
+
+#: src/php/class-edition.php
+msgid "Could not fetch update information for %s. Please try again later."
+msgstr "%s の更新情報を取得できませんでした。時間をおいてもう一度お試しください。"

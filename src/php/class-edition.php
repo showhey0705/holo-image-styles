@@ -36,6 +36,15 @@ final class Edition {
 		if ( '' !== $host ) {
 			add_filter( 'update_plugins_' . $host, [ $this, 'check_update' ], 10, 3 );
 			add_filter( 'plugins_api', [ $this, 'plugin_info' ], 10, 3 );
+			// Keep the 12h cache from hiding a fresh release: drop it on Dashboard → Updates → "Check again",
+			// whenever WordPress drops its own update data (activate / delete), and after an update ran.
+			add_action( 'upgrader_process_complete', [ $this, 'flush' ], 10, 0 );
+			add_action( 'delete_site_transient_update_plugins', [ $this, 'flush' ], 10, 0 );
+			add_action( 'load-update-core.php', [ $this, 'flush_on_force_check' ], 10, 0 );
+			// "Check for updates" link in the plugin row (same as the PUC-based plugins).
+			add_filter( 'plugin_row_meta', [ $this, 'row_meta' ], 10, 2 );
+			add_action( 'admin_post_holo_check_update', [ $this, 'handle_check' ] );
+			add_action( 'admin_notices', [ $this, 'check_notice' ] );
 		}
 	}
 
@@ -153,6 +162,86 @@ final class Edition {
 		$referer = wp_get_referer();
 		wp_safe_redirect( $referer ? $referer : admin_url( 'plugins.php' ) );
 		exit;
+	}
+
+	/**
+	 * Drop the cached update metadata.
+	 */
+	public function flush(): void {
+		delete_site_transient( self::UPDATE_CACHE );
+	}
+
+	/**
+	 * Dashboard → Updates → "Check again" (force-check=1) also drops our cache.
+	 */
+	public function flush_on_force_check(): void {
+		if ( ! empty( $_GET['force-check'] ) && current_user_can( 'update_plugins' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$this->flush();
+		}
+	}
+
+	/**
+	 * "Check for updates" link next to "View details".
+	 *
+	 * @param array<int,string> $links Row meta links.
+	 * @param string            $file  Plugin basename.
+	 * @return array<int,string>
+	 */
+	public function row_meta( $links, $file ) {
+		if ( plugin_basename( HOLO_IMAGE_STYLES_FILE ) !== $file || ! current_user_can( 'update_plugins' ) ) {
+			return $links;
+		}
+		$url     = wp_nonce_url( admin_url( 'admin-post.php?action=holo_check_update' ), 'holo_check_update' );
+		$links[] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Check for updates', 'holo-image-styles' ) . '</a>';
+		return $links;
+	}
+
+	/**
+	 * Refetch now (our cache + WordPress' update data), then back to Plugins with the result.
+	 */
+	public function handle_check(): void {
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			wp_die( esc_html__( 'You are not allowed to update plugins.', 'holo-image-styles' ), 403 );
+		}
+		check_admin_referer( 'holo_check_update' );
+		$this->flush();
+		delete_site_transient( 'update_plugins' );
+		if ( ! function_exists( 'wp_update_plugins' ) ) {
+			require_once ABSPATH . WPINC . '/update.php';
+		}
+		wp_update_plugins();
+		$json  = $this->fetch_update_json();
+		$state = 'error';
+		if ( false !== $json ) {
+			$state = version_compare( (string) $json['version'], HOLO_IMAGE_STYLES_VERSION, '>' ) ? 'available' : 'latest';
+		}
+		wp_safe_redirect( add_query_arg( 'holo_update_check', $state, self_admin_url( 'plugins.php' ) ) );
+		exit;
+	}
+
+	/**
+	 * Result of "Check for updates", above the plugin list.
+	 */
+	public function check_notice(): void {
+		$state = isset( $_GET['holo_update_check'] ) ? sanitize_key( wp_unslash( $_GET['holo_update_check'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( '' === $state || ! current_user_can( 'update_plugins' ) ) {
+			return;
+		}
+		if ( 'available' === $state ) {
+			$json = $this->fetch_update_json();
+			/* translators: 1: plugin name, 2: new version */
+			$msg  = sprintf( __( '%1$s %2$s is available. Use "Update now" in the list to install it.', 'holo-image-styles' ), 'Holo Image Styles', is_array( $json ) ? (string) $json['version'] : '' );
+			$type = 'warning';
+		} elseif ( 'latest' === $state ) {
+			/* translators: 1: plugin name, 2: installed version */
+			$msg  = sprintf( __( '%1$s is up to date (%2$s).', 'holo-image-styles' ), 'Holo Image Styles', HOLO_IMAGE_STYLES_VERSION );
+			$type = 'success';
+		} else {
+			/* translators: %s: plugin name */
+			$msg  = sprintf( __( 'Could not fetch update information for %s. Please try again later.', 'holo-image-styles' ), 'Holo Image Styles' );
+			$type = 'error';
+		}
+		printf( '<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>', esc_attr( $type ), esc_html( $msg ) );
 	}
 
 	/**
